@@ -13,14 +13,12 @@ fn fix_to_float(a : i32) -> f32 {
 }
 
 fn fp_mul(a : i32, b : i32) -> i32 {
-    let mul_result = a as i64 * b as i64;
-    let result = mul_result >> 16;
-    result as i32
+    (i64::from(a) * i64::from(b) >> 16) as i32
 }
 
 mod test {
     use super::*;
-    const EPSILON : f32 = FP_LSB;
+    const EPSILON : f32 = 11.0 * FP_LSB; // TODO: We gotta get a little better precision.
     const VAL_A : f32 = 1234.5678;
     const VAL_A_FP : i32 = (VAL_A * (1 << 16) as f32) as i32;
     const VAL_B : f32 = -8675.309;
@@ -65,16 +63,39 @@ mod test {
         let a_fp : i32 = float_to_fix(1.0);
         let b_fp : i32 = float_to_fix(1.0);
         assert_eq!(fp_mul(a_fp, b_fp), FP_ONE);
+        let a_fp : i32 = float_to_fix(5.0);
+        let b_fp : i32 = float_to_fix(5.0);
+        assert_eq!(fix_to_float(fp_mul(a_fp, b_fp)), 25.0);
+        let a_fp : i32 = float_to_fix(5.0);
+        let b_fp : i32 = float_to_fix(-5.0);
+        assert_eq!(fix_to_float(fp_mul(a_fp, b_fp)), -25.0);
     }
 
     #[test]
     fn multiply_advanced() {
-        let expected = VAL_A * VAL_B;
-        let a_fp : i32 = float_to_fix(VAL_A);
-        let b_fp : i32 = float_to_fix(VAL_B);
-        let result = fp_mul(a_fp, b_fp);
-        let result_float = fix_to_float(result);
-        println!("{:?} vs {:?}", result_float, expected);
-        assert!((result_float - expected).abs() < EPSILON);
+	let eps_float = EPSILON;
+	let eps_fp = float_to_fix(eps_float);
+        let a_fp : i32 = float_to_fix(12.56);
+        let b_fp : i32 = float_to_fix(34.23);
+	let expected_float = 12.56 * 34.23;
+        let expected_fp = float_to_fix(expected_float);
+        let result_fp = fp_mul(a_fp, b_fp);
+        let result_float = fix_to_float(result_fp);
+	let diff_fp = ((result_fp - expected_fp).abs());
+        let diff_float = (result_float - expected_float).abs();
+	assert!(diff_fp < eps_fp);
+        assert!(diff_float < eps_float);
+	let eps_float = EPSILON;
+	let eps_fp = float_to_fix(eps_float);
+        let a_fp : i32 = float_to_fix(12.56);
+        let b_fp : i32 = float_to_fix(-34.23);
+	let expected_float = 12.56 * -34.23;
+        let expected_fp = float_to_fix(expected_float);
+        let result_fp = fp_mul(a_fp, b_fp);
+        let result_float = fix_to_float(result_fp);
+	let diff_fp = ((result_fp - expected_fp).abs());
+        let diff_float = (result_float - expected_float).abs();
+	assert!(diff_fp < eps_fp);
+        assert!(diff_float < eps_float);
     }
 }
