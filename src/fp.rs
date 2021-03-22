@@ -69,8 +69,12 @@ mod test {
 
     #[test]
     fn multiply_advanced() {
+        let expected = VAL_A * VAL_B;
         let a_fp : i32 = float_to_fix(VAL_A);
         let b_fp : i32 = float_to_fix(VAL_B);
-        assert!((fix_to_float(fp_mul(a_fp, b_fp)) - (VAL_A * VAL_B)).abs() < EPSILON);
+        let result = fp_mul(a_fp, b_fp);
+        let result_float = fix_to_float(result);
+        println!("{:?} vs {:?}", result_float, expected);
+        assert!((result_float - expected).abs() < EPSILON);
     }
 }
