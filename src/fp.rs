@@ -25,7 +25,7 @@ fn fp_div(a : i32, b : i32) -> i32 {
 #[cfg(test)]
 mod test {
     use super::*;
-    const EPSILON : f32 = 11.0 * FP_LSB; // TODO: We gotta get better precision.
+    const EPSILON : f32 = 1.0 * FP_LSB; // TODO: We gotta get better precision.
     const VAL_A : f32 = 1234.5678;
     const VAL_A_FP : i32 = (VAL_A * (1 << 16) as f32) as i32;
     const VAL_B : f32 = -8675.309;
@@ -124,7 +124,7 @@ mod test {
 
     #[test]
     fn divide_advanced() {
-        let eps_float =  EPSILON; // TODO: THIS IS PATHETIC
+        let eps_float =  EPSILON; 
         let eps_fp = float_to_fix(eps_float);
         let a_fp : i32 = float_to_fix(31.23);
         let b_fp : i32 = float_to_fix(12.56);
