@@ -18,7 +18,7 @@ fn fp_div(a : i32, b : i32) -> i32 {
          0
     }
     else {
-        ((i64::from(a) / i64::from(b)) << 16) as i32
+        ((i64::from(a) << 16)/ i64::from(b)) as i32
     }
 }
 
@@ -124,8 +124,8 @@ mod test {
 
     #[test]
     fn divide_advanced() {
-	let eps_float = 4096.0*EPSILON; // TODO: THIS IS PATHETIC
-	let eps_fp = float_to_fix(eps_float);
+        let eps_float =  EPSILON; // TODO: THIS IS PATHETIC
+        let eps_fp = float_to_fix(eps_float);
         let a_fp : i32 = float_to_fix(31.23);
         let b_fp : i32 = float_to_fix(12.56);
         let expected_float = 31.23/12.56;
