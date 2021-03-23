@@ -1,6 +1,3 @@
-#[cfg(test)]
-
-const FP_SHIFT_AMT : i32 = 16;
 const FP_ONE : i32 = 1 << 16;
 const FP_LSB : f32 = 1.0 / ((1 << 16) as f32);
 
@@ -13,12 +10,22 @@ fn fix_to_float(a : i32) -> f32 {
 }
 
 fn fp_mul(a : i32, b : i32) -> i32 {
-    (i64::from(a) * i64::from(b) >> 16) as i32
+    ((i64::from(a) * i64::from(b)) >> 16) as i32
 }
 
+fn fp_div(a : i32, b : i32) -> i32 {
+    if b == 0 {
+         0
+    }
+    else {
+        ((i64::from(a) / i64::from(b)) << 16) as i32
+    }
+}
+
+#[cfg(test)]
 mod test {
     use super::*;
-    const EPSILON : f32 = 11.0 * FP_LSB; // TODO: We gotta get a little better precision.
+    const EPSILON : f32 = 11.0 * FP_LSB; // TODO: We gotta get better precision.
     const VAL_A : f32 = 1234.5678;
     const VAL_A_FP : i32 = (VAL_A * (1 << 16) as f32) as i32;
     const VAL_B : f32 = -8675.309;
@@ -81,7 +88,7 @@ mod test {
         let expected_fp = float_to_fix(expected_float);
         let result_fp = fp_mul(a_fp, b_fp);
         let result_float = fix_to_float(result_fp);
-	let diff_fp = ((result_fp - expected_fp).abs());
+	let diff_fp = (result_fp - expected_fp).abs();
         let diff_float = (result_float - expected_float).abs();
 	assert!(diff_fp < eps_fp);
         assert!(diff_float < eps_float);
@@ -93,7 +100,49 @@ mod test {
         let expected_fp = float_to_fix(expected_float);
         let result_fp = fp_mul(a_fp, b_fp);
         let result_float = fix_to_float(result_fp);
-	let diff_fp = ((result_fp - expected_fp).abs());
+	let diff_fp = (result_fp - expected_fp).abs();
+        let diff_float = (result_float - expected_float).abs();
+	assert!(diff_fp < eps_fp);
+        assert!(diff_float < eps_float);
+    }
+
+    #[test]
+    fn divide_basic() {
+        let a_fp : i32 = FP_ONE;
+        let b_fp : i32 = 0;
+        assert_eq!(fp_div(a_fp, b_fp), 0); // Divide by zero should be....???
+        let a_fp : i32 = float_to_fix(1.0);
+        let b_fp : i32 = float_to_fix(1.0);
+        assert_eq!(fp_div(a_fp, b_fp), FP_ONE);
+        let a_fp : i32 = float_to_fix(4.0);
+        let b_fp : i32 = float_to_fix(2.0);
+        assert_eq!(fix_to_float(fp_div(a_fp, b_fp)), 2.0);
+        let a_fp : i32 = float_to_fix(6.0);
+        let b_fp : i32 = float_to_fix(-2.0);
+        assert_eq!(fix_to_float(fp_div(a_fp, b_fp)), -3.0);
+    }
+
+    #[test]
+    fn divide_advanced() {
+	let eps_float = 4096.0*EPSILON; // TODO: THIS IS PATHETIC
+	let eps_fp = float_to_fix(eps_float);
+        let a_fp : i32 = float_to_fix(31.23);
+        let b_fp : i32 = float_to_fix(12.56);
+        let expected_float = 31.23/12.56;
+        let expected_fp : i32 = float_to_fix(expected_float);
+        let result_fp = fp_div(a_fp, b_fp);
+        let result_float = fix_to_float(result_fp);
+	let diff_fp = (result_fp - expected_fp).abs();
+        let diff_float = (result_float - expected_float).abs();
+	assert!(diff_fp < eps_fp);
+        assert!(diff_float < eps_float);
+        let a_fp : i32 = float_to_fix(-31.23);
+        let b_fp : i32 = float_to_fix(12.56);
+        let expected_float = -31.23/12.56;
+        let expected_fp : i32 = float_to_fix(expected_float);
+        let result_fp = fp_div(a_fp, b_fp);
+        let result_float = fix_to_float(result_fp);
+	let diff_fp = (result_fp - expected_fp).abs();
         let diff_float = (result_float - expected_float).abs();
 	assert!(diff_fp < eps_fp);
         assert!(diff_float < eps_float);
