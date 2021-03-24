@@ -1,3 +1,5 @@
+/// Implementation of the different stacks used by our vm.
+
 const MAX_STACK_SIZE : usize = 1 << 16;
 const STACK_EMPTY : usize = MAX_STACK_SIZE + 666;
 
@@ -7,43 +9,46 @@ struct Stack {
 }
 
 impl Stack {
-    fn new() -> Stack {
+    pub fn new() -> Stack {
         Stack {
             vals: [0; MAX_STACK_SIZE],
             top: STACK_EMPTY,
         }
     }
 
-    fn clear(&mut self) {
+    pub fn clear(&mut self) {
         self.vals = [0; MAX_STACK_SIZE];
         self.top = STACK_EMPTY;
     }
 
-    fn empty(&self) -> bool {
+    pub fn empty(&self) -> bool {
         self.top == STACK_EMPTY
     }
 
-    fn push(&mut self, a : i32) -> bool {
+    pub fn full(&self) -> bool {
+        self.top == (MAX_STACK_SIZE - 1)
+    }
+
+    pub fn push(&mut self, a : i32) -> bool {
         if self.empty() {
             self.top = 0;
+        } else if self.full() {
+            return false;
         } else {
             self.top += 1;
         }
-        if self.top >= MAX_STACK_SIZE {
-            return false;
-        } 
         self.vals[self.top] = a;
         true
     }
     
-    fn peek(&mut self) -> Option<i32> {
+    pub fn peek(&mut self) -> Option<i32> {
         if self.empty() {
             return None;
         }
         Some(self.vals[self.top])
     }
 
-    fn pop(&mut self) -> Option<i32> {
+    pub fn pop(&mut self) -> Option<i32> {
         let val = self.peek();
         if val.is_some() {
             if self.top == 0 {
@@ -115,5 +120,11 @@ mod test {
         let pop_val = stk.pop();
         assert!(pop_val.is_none());
         assert!(stk.empty());
+
+        // Fill 'er up test.
+        while !stk.full() {
+            stk.push(666); 
+        }
+        assert!(!stk.push(666));
     }
 }

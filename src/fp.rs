@@ -1,19 +1,23 @@
+/// Module of fixed point arithmetic methods for the virtual machine.
+/// SeqStk uses two's complement 16.16 bit fixed point arithmetic.
+
+
 const FP_ONE : i32 = 1 << 16;
 const FP_LSB : f32 = 1.0 / ((1 << 16) as f32);
 
-fn float_to_fix(a : f32) -> i32 {
+pub fn float_to_fix(a : f32) -> i32 {
     (a / FP_LSB) as i32
 }
 
-fn fix_to_float(a : i32) -> f32 {
+pub fn fix_to_float(a : i32) -> f32 {
     a as f32 * FP_LSB
 }
 
-fn fp_mul(a : i32, b : i32) -> i32 {
+pub fn fp_mul(a : i32, b : i32) -> i32 {
     ((i64::from(a) * i64::from(b)) >> 16) as i32
 }
 
-fn fp_div(a : i32, b : i32) -> i32 {
+pub fn fp_div(a : i32, b : i32) -> i32 {
     if b == 0 {
          0
     }
