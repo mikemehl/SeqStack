@@ -45,7 +45,7 @@ impl Stack {
 
     fn pop(&mut self) -> Option<i32> {
         let val = self.peek();
-        if let Some(_) = val {
+        if val.is_some() {
             if self.top == 0 {
                 self.top = STACK_EMPTY;
             } else {
