@@ -17,13 +17,24 @@ struct Vm {
 
 impl Vm {
     pub fn new() -> Box<Vm> {
+        let ram = vec![0; RAM_SIZE];
+        let interrupts = vec![INVALID_INTERRUPT; NUM_INTERRUPTS];
+        let stk_basis = Stack::new();
+        let mut ports = Vec::<Stack>::with_capacity(NUM_PORTS);
+        for _i in 0..NUM_PORTS {
+            ports.push(stk_basis);
+        }
+        let mut data_stack = Vec::<Stack>::with_capacity(1);
+        data_stack.push(stk_basis);
+        let mut call_stack = Vec::<Stack>::with_capacity(1);
+        call_stack.push(stk_basis);
         Box::new(Vm {
-            ram : vec![0; RAM_SIZE].into_boxed_slice(),
+            ram : ram.into_boxed_slice(), 
             pc : 0,
-            data_stack : vec![Stack::new(); 1].into_boxed_slice(),
-            call_stack : vec![Stack::new(); 1].into_boxed_slice(),
-            interrupts : vec![INVALID_INTERRUPT; NUM_INTERRUPTS].into_boxed_slice(),
-            ports : vec![Stack::new(); NUM_PORTS].into_boxed_slice(),
+            data_stack : data_stack.into_boxed_slice(),
+            call_stack : call_stack.into_boxed_slice(),
+            interrupts : interrupts.into_boxed_slice(),
+            ports : ports.into_boxed_slice(),
         })
     }
 } 
