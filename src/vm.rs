@@ -35,6 +35,14 @@ impl Vm {
             ports : ports.into_boxed_slice(),
         })
     }
+
+    pub fn load(&mut self, code_in : &[u8]) -> bool {
+        if code_in.len() > self.ram.len() {
+            return false;
+        }
+        self.ram.clone_from_slice(code_in);
+        true
+    }
 } 
 
 
@@ -42,9 +50,8 @@ impl Vm {
 #[cfg(test)]
 mod test {
     use super::*;
-    
-    #[test]
-    fn test_init() {
+
+    fn init_vm() -> Box<Vm> {
         let vm = Vm::new();
         assert!(vm.pc == 0);
         assert!(vm.data_stack.empty());
@@ -55,5 +62,22 @@ mod test {
         for i in vm.interrupts.iter() {
             assert_eq!(*i, INVALID_INTERRUPT);
         }
+        vm
     }
+    
+    #[test]
+    fn test_init() {
+        let _vm = init_vm();
+    }
+
+   #[test]
+   fn test_load() {
+       const TEST_VAL : u8 = 66;
+       let mut vm = init_vm();
+       let code : [u8; RAM_SIZE] = [TEST_VAL; RAM_SIZE];
+       assert!(vm.load(&code));
+       for b in vm.ram.iter() {
+           assert_eq!(*b, TEST_VAL);
+       }
+   }
 }
