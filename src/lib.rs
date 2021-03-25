@@ -5,6 +5,7 @@
 
 mod fp;
 mod stk;
+mod vm;
 
 #[cfg(test)]
 mod test {
