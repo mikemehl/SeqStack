@@ -9,8 +9,8 @@ const INVALID_INTERRUPT : i16 = -1;
 struct Vm {
     ram : Box<[u8]>,
     pc : usize,
-    data_stack : Box<[Stack]>,
-    call_stack : Box<[Stack]>,
+    data_stack : Box<Stack>,
+    call_stack : Box<Stack>,
     interrupts : Box<[i16]>,
     ports : Box<[Stack]>,
 }
@@ -24,15 +24,13 @@ impl Vm {
         for _i in 0..NUM_PORTS {
             ports.push(stk_basis);
         }
-        let mut data_stack = Vec::<Stack>::with_capacity(1);
-        data_stack.push(stk_basis);
-        let mut call_stack = Vec::<Stack>::with_capacity(1);
-        call_stack.push(stk_basis);
+        let data_stack = Box::new(stk_basis);
+        let call_stack = Box::new(stk_basis);
         Box::new(Vm {
             ram : ram.into_boxed_slice(), 
             pc : 0,
-            data_stack : data_stack.into_boxed_slice(),
-            call_stack : call_stack.into_boxed_slice(),
+            data_stack : data_stack,
+            call_stack : call_stack,
             interrupts : interrupts.into_boxed_slice(),
             ports : ports.into_boxed_slice(),
         })
