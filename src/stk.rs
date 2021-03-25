@@ -3,9 +3,16 @@
 const MAX_STACK_SIZE : usize = 1 << 16;
 const STACK_EMPTY : usize = MAX_STACK_SIZE + 666;
 
-struct Stack {
+pub struct Stack {
     vals : [i32; MAX_STACK_SIZE],
     top : usize,
+}
+
+impl Copy for Stack {}
+impl Clone for Stack {
+    fn clone(&self) -> Stack {
+         Stack { vals: self.vals, top: self.top}
+    }
 }
 
 impl Stack {
