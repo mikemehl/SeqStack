@@ -49,8 +49,8 @@ mod test {
     fn test_init() {
         let vm = Vm::new();
         assert!(vm.pc == 0);
-        assert!(vm.data_stack[0].empty());
-        assert!(vm.call_stack[0].empty());
+        assert!(vm.data_stack.empty());
+        assert!(vm.call_stack.empty());
         for p in vm.ports.iter() {
             assert!(p.empty());
         }
