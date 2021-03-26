@@ -1,12 +1,14 @@
 /// Module with the central vm structures.
 use crate::stk::Stack;
+use crate::fp;
+use crate::opcodes::*;
 
 const RAM_SIZE : usize = 1 << 15;
 const NUM_INTERRUPTS : usize = 8;
 const NUM_PORTS : usize = NUM_INTERRUPTS;
 const INVALID_INTERRUPT : i16 = -1;
 
-struct Vm {
+pub struct Vm {
     ram : Box<[u8]>,
     pc : usize,
     data_stack : Box<Stack>,
@@ -43,7 +45,30 @@ impl Vm {
         self.ram.clone_from_slice(code_in);
         true
     }
+
+    pub fn cycle_once(&mut self) {
+         // Grab the next instruction.
+         let next_inst = self.ram[self.pc];
+         self.pc += 1;
+         // Figure out which group it belongs to.
+         let fam : OpFamily = (next_inst & OpMasks::Family as u8).into();
+         match fam {
+             OpFamily::StackOp => {stack_op_impl::cycle_op(self, next_inst); },
+             _ => {},
+         }
+    }
+
 } 
+
+mod stack_op_impl {
+    use crate::stk::Stack;
+    use crate::fp;
+    use crate::opcodes::*;
+    pub (super) fn cycle_op(_vm : &mut super::Vm, inst : u8) {
+        let _op_type = inst & OpMasks::Type as u8;
+        let _addr_mode = inst & OpMasks::AddrMode as u8;
+    }
+}
 
 
 
@@ -79,5 +104,27 @@ mod test {
        for b in vm.ram.iter() {
            assert_eq!(*b, TEST_VAL);
        }
+       let code : [u8; RAM_SIZE + 10] = [TEST_VAL; RAM_SIZE + 10];
+       assert!(!vm.load(&code));
+   }
+
+   #[test]
+   fn test_push_op() {
+       let test_val : i32 = fp::float_to_fix(66.0);
+       let mut vm = init_vm();
+       let mut code : [u8; RAM_SIZE] = [0; RAM_SIZE];
+       // Push Immediate
+       code[0] = OpCodes::PushImm as u8; 
+       let val = test_val.to_ne_bytes();
+       for i in 1..(1 + val.len() - 1) {
+           code[i] = val[i];
+       }
+       assert!(vm.load(&code));
+       vm.cycle_once();
+       assert_eq!(vm.pc, 5);
+       assert!(!vm.data_stack.empty());
+       let top_val = vm.data_stack.peek();
+       assert!(!top_val.is_none());
+       assert_eq!(top_val.unwrap(), test_val);
    }
 }

@@ -2,10 +2,12 @@
 
 // TODO: Remove this directive and cleanup once stable.
 #![allow(dead_code)]
+#![allow(unused_imports)]
 
 mod fp;
 mod stk;
 mod vm;
+mod opcodes;
 
 #[cfg(test)]
 mod test {
