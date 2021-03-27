@@ -77,7 +77,7 @@ mod stack_op_impl {
         let arg : Option<i32> = match addr_mode {
             OpAddrMode::Immediate => { 
                 let mut val_arr : [u8; 4] = [0; 4];
-                for i in 0..3 {
+                for i in 0..4 {
                    val_arr[i] = vm.ram[vm.pc + i]; 
                 }
                 let val = i32::from_ne_bytes(val_arr);
@@ -138,8 +138,8 @@ mod test {
        // Push Immediate
        code[0] = OpCodes::PushImm as u8; 
        let val = test_val.to_ne_bytes();
-       for i in 1..(1 + val.len() - 1) {
-           code[i] = val[i];
+       for i in 1..(1 + val.len()) {
+           code[i] = val[i - 1];
        }
        assert!(vm.load(&code));
        vm.cycle_once();
