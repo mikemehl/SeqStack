@@ -1,21 +1,10 @@
 
 
 pub enum OpMasks {
-    Family,
-    Type,
-    AddrMode,
-    Invalid,
-}
-
-impl From<u8> for OpMasks {
-    fn from(a : u8) -> Self {
-        match a {
-            0b11100000 => OpMasks::Family,
-            0b00011100 => OpMasks::Type,
-            0b00000011 => OpMasks::AddrMode,
-            _ => OpMasks::Invalid,
-        }
-    }
+    Family = 0b11100000,
+    Type = 0b00011100,
+    AddrMode = 0b00000011,
+    Invalid = 0b00000000,
 }
 
 pub enum OpFamily {
@@ -34,11 +23,11 @@ impl From<u8> for OpFamily {
 }
 
 pub enum OpAddrMode {
-    Immediate,
-    IndexStack,
-    IndexImmediate,
-    Stack,
-    Invalid
+    Immediate = 0b00000011,
+    IndexStack = 0b00000010,
+    IndexImmediate = 0b00000001,
+    Stack = 0b00000000,
+    Invalid = 0b11111111,
 }
 
 impl From<u8> for OpAddrMode {
@@ -56,8 +45,8 @@ impl From<u8> for OpAddrMode {
 
 // Stack family specific enums
 pub enum StackOpTypes {
-    Push,
-    Invalid
+    Push = 0b00011100,
+    Invalid = 0b11111111,
 }
 
 impl From<u8> for StackOpTypes {
