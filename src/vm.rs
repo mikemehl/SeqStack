@@ -51,7 +51,7 @@ impl Vm {
          let next_inst = self.ram[self.pc];
          self.pc += 1;
          // Figure out which group it belongs to.
-         let fam : OpFamily = (next_inst & OpMasks::Family as u8).into();
+         let fam : OpFamily = OpFamily::from(next_inst);
          match fam {
              OpFamily::StackOp => {stack_op_impl::cycle_op(self, next_inst); },
              _ => {},
@@ -64,9 +64,31 @@ mod stack_op_impl {
     use crate::stk::Stack;
     use crate::fp;
     use crate::opcodes::*;
-    pub (super) fn cycle_op(_vm : &mut super::Vm, inst : u8) {
-        let _op_type = inst & OpMasks::Type as u8;
-        let _addr_mode = inst & OpMasks::AddrMode as u8;
+    pub (super) fn cycle_op(vm : &mut super::Vm, inst : u8) {
+        let op_type = StackOpTypes::from(inst);
+        let addr_mode = OpAddrMode::from(inst);
+        match op_type {
+            StackOpTypes::Push => op_push(vm, addr_mode),
+            _ => {} 
+        }
+    }
+
+    pub fn op_push(vm : &mut super::Vm, addr_mode : OpAddrMode) {
+        let arg : Option<i32> = match addr_mode {
+            OpAddrMode::Immediate => { 
+                let mut val_arr : [u8; 4] = [0; 4];
+                for i in 0..3 {
+                   val_arr[i] = vm.ram[vm.pc + i]; 
+                }
+                let val = i32::from_ne_bytes(val_arr);
+                vm.pc += 4;
+                Some(val)
+            },
+            _ => None,
+        };
+        if let Some(p_val) = arg {
+            vm.data_stack.push(p_val);
+        }
     }
 }
 
@@ -121,10 +143,10 @@ mod test {
        }
        assert!(vm.load(&code));
        vm.cycle_once();
-       assert_eq!(vm.pc, 5);
-       assert!(!vm.data_stack.empty());
+       assert_eq!(vm.pc, 5, "Failed to increment program counter.");
+       assert!(!vm.data_stack.empty(), "Data stack empty after push.");
        let top_val = vm.data_stack.peek();
-       assert!(!top_val.is_none());
-       assert_eq!(top_val.unwrap(), test_val);
+       assert!(!top_val.is_none(), "Data stack peek returned None on a nonempty stack.");
+       assert_eq!(top_val.unwrap(), test_val, "Data stack top was not expected value.");
    }
 }
