@@ -48,6 +48,9 @@ impl Vm {
 
     pub fn cycle_once(&mut self) {
          // Grab the next instruction.
+         if self.pc >= RAM_SIZE {
+             return;
+         }
          let next_inst = self.ram[self.pc];
          self.pc += 1;
          // Figure out which group it belongs to.
@@ -148,5 +151,13 @@ mod test {
        let top_val = vm.data_stack.peek();
        assert!(!top_val.is_none(), "Data stack peek returned None on a nonempty stack.");
        assert_eq!(top_val.unwrap(), test_val, "Data stack top was not expected value.");
+       // End of the rope test (Push Immediate)
+       code[RAM_SIZE-1] = OpCodes::PushImm as u8;
+       vm.pc = RAM_SIZE-1;
+       vm.cycle_once();
+       assert_eq!(vm.pc, RAM_SIZE, "PC did not increment for last instruction."); 
+       vm.cycle_once();
+       assert_eq!(vm.pc, RAM_SIZE, "PC WAS MODIFIED AT END OF RAM INSTRUCTION");
+      
    }
 }
