@@ -101,7 +101,7 @@ mod stack_op_impl {
                     if val_addr > 0 && val_addr < super::RAM_SIZE as isize {
                         let mut val_arr : [u8; 4] = [0; 4];
                         for i in 0..val_arr.len() {
-                            val_arr[i] = vm.ram[off as usize + i];
+                            val_arr[i] = vm.ram[val_addr as usize + i];
                         }
                         let val = i32::from_ne_bytes(val_arr);
                         arg = Some(val);
