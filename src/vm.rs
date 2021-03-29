@@ -77,6 +77,7 @@ mod stack_op_impl {
     }
 
     pub fn op_push(vm : &mut super::Vm, addr_mode : OpAddrMode) {
+        // TODO: Make sure we don't try to read outside of RAM.
         let arg : Option<i32> = match addr_mode {
             OpAddrMode::Immediate => { 
                 let mut val_arr : [u8; 4] = [0; 4];
@@ -86,6 +87,32 @@ mod stack_op_impl {
                 let val = i32::from_ne_bytes(val_arr);
                 vm.pc += 4;
                 Some(val)
+            },
+            OpAddrMode::IndexStack => {
+                let arg : Option<i32>;
+                let mut base_arr : [u8; 2] = [0; 2];
+                for i in 0..2 {
+                    base_arr[i] = vm.ram[vm.pc + i];
+                } 
+                let base = i16::from_ne_bytes(base_arr) as isize;
+                if let Some(offset) = vm.data_stack.pop() {
+                    let off = offset >> 16;
+                    let val_addr : isize = base + off as isize;
+                    if val_addr > 0 && val_addr < super::RAM_SIZE as isize {
+                        let mut val_arr : [u8; 4] = [0; 4];
+                        for i in 0..val_arr.len() {
+                            val_arr[i] = vm.ram[off as usize + i];
+                        }
+                        let val = i32::from_ne_bytes(val_arr);
+                        arg = Some(val);
+                    } else {
+                        arg = None;
+                    }
+                } else {
+                    arg = None;
+                }
+                vm.pc += 2;
+                arg
             },
             _ => None,
         };
@@ -134,7 +161,7 @@ mod test {
    }
 
    #[test]
-   fn test_push_op() {
+   fn test_push_imm_op() {
        let test_val : i32 = fp::float_to_fix(66.0);
        let mut vm = init_vm();
        let mut code : [u8; RAM_SIZE] = [0; RAM_SIZE];
@@ -158,6 +185,34 @@ mod test {
        assert_eq!(vm.pc, RAM_SIZE, "PC did not increment for last instruction."); 
        vm.cycle_once();
        assert_eq!(vm.pc, RAM_SIZE, "PC WAS MODIFIED AT END OF RAM INSTRUCTION");
-      
+   }
+
+   #[test]
+   fn test_push_idx_stk_op() {
+       // Push Index Stack
+       let mut vm = init_vm();
+       let mut code : [u8; RAM_SIZE] = [0; RAM_SIZE];
+       let base : usize = 0x123;
+       let offset = fp::float_to_fix(2.0);
+       let target_addr = base + 2;
+       vm.data_stack.push(offset);
+       let test_val = 666.0;
+       let test_val_fp = fp::float_to_fix(test_val);
+       let test_val_bytes = test_val_fp.to_ne_bytes();
+       for i in 0..test_val_bytes.len() {
+           code[target_addr + i] = test_val_bytes[i];
+       }
+       code[0] = OpCodes::PushIndStk as u8;
+       let base_arr = base.to_ne_bytes();
+       for i in 1..(base_arr.len() + 1) {
+           code[i] = base_arr[i-1];
+       }
+       assert!(vm.load(&code));
+       vm.cycle_once();
+       assert_eq!(vm.pc, 3, "Failed to increment program counter.");
+       assert!(!vm.data_stack.empty(), "Data stack empty after push.");
+       let top_val = vm.data_stack.peek();
+       assert!(!top_val.is_none(), "Data stack peek returned None on a nonempty stack.");
+       assert_eq!(top_val.unwrap(), test_val_fp, "Data stack top was not expected value.");
    }
 }
