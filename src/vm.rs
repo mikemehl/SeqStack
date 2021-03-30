@@ -68,8 +68,11 @@ mod stack_op_impl {
     use crate::fp;
     use crate::opcodes::*;
 
-    fn get_addr_val(vm : &mut super::Vm, addr_mode : OpAddrMode) -> Option<i32> {
+    // Extracts the value based on the addressing mode.
+    // Increments the program counter.
+    fn get_addr_val(vm : &mut super::Vm, addr_mode : &OpAddrMode) -> Option<i32> {
         // TODO: Make sure we don't try to read outside of RAM.
+        // TODO: Can we hoist this out of here and make it work for all operations???
         match addr_mode {
             OpAddrMode::Immediate => { 
                 let mut val_arr : [u8; 4] = [0; 4];
@@ -132,6 +135,10 @@ mod stack_op_impl {
                 vm.pc += 2;
                 arg
             },
+            OpAddrMode::Stack => {
+                vm.pc +=1;
+		vm.data_stack.pop()
+            }
             _ => None,
         }
     }
@@ -146,9 +153,21 @@ mod stack_op_impl {
     }
 
     pub fn op_push(vm : &mut super::Vm, addr_mode : OpAddrMode) {
-        let arg : Option<i32> = get_addr_val(vm, addr_mode);
+        let arg : Option<i32> = get_addr_val(vm, &addr_mode);
         if let Some(p_val) = arg {
-            vm.data_stack.push(p_val);
+            if  let OpAddrMode::Stack = addr_mode {
+                let addr = p_val >> 16 as isize;
+                if addr >= 0 {
+                    let mut val_arr : [u8; 4] = [0; 4];
+                    for i in 0..val_arr.len() {
+                        val_arr[i] = vm.ram[addr as usize + i];
+                    }
+                    vm.data_stack.push(i32::from_ne_bytes(val_arr));
+                }
+            }
+            else {
+                vm.data_stack.push(p_val);
+            }
         }
     }
 }
@@ -249,7 +268,7 @@ mod test {
 
    #[test]
    fn test_push_idx_imm_op() {
-       // Push Index Stack
+       // Push Index Immediate 
        let mut vm = init_vm();
        let mut code : [u8; RAM_SIZE] = [0; RAM_SIZE];
        let base : usize = 0x123;
@@ -270,6 +289,29 @@ mod test {
        assert!(vm.load(&code));
        vm.cycle_once();
        assert_eq!(vm.pc, 3, "Failed to increment program counter.");
+       assert!(!vm.data_stack.empty(), "Data stack empty after push.");
+       let top_val = vm.data_stack.peek();
+       assert!(!top_val.is_none(), "Data stack peek returned None on a nonempty stack.");
+       assert_eq!(top_val.unwrap(), test_val_fp, "Data stack top was not expected value.");
+   }
+
+   #[test]
+   fn test_push_stk_op() {
+       // Push Stack
+       let mut vm = init_vm();
+       let mut code : [u8; RAM_SIZE] = [0; RAM_SIZE];
+       let target_addr : usize = 0x123;
+       vm.data_stack.push(fp::float_to_fix(target_addr as f32));
+       let test_val = 666.0;
+       let test_val_fp = fp::float_to_fix(test_val);
+       let test_val_bytes = test_val_fp.to_ne_bytes();
+       for i in 0..test_val_bytes.len() {
+           code[target_addr + i] = test_val_bytes[i];
+       }
+       code[0] = OpCodes::PushStk as u8;
+       assert!(vm.load(&code));
+       vm.cycle_once();
+       assert_eq!(vm.pc, 2, "Failed to increment program counter.");
        assert!(!vm.data_stack.empty(), "Data stack empty after push.");
        let top_val = vm.data_stack.peek();
        assert!(!top_val.is_none(), "Data stack peek returned None on a nonempty stack.");
