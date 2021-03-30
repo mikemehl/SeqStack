@@ -67,18 +67,10 @@ mod stack_op_impl {
     use crate::stk::Stack;
     use crate::fp;
     use crate::opcodes::*;
-    pub (super) fn cycle_op(vm : &mut super::Vm, inst : u8) {
-        let op_type = StackOpTypes::from(inst);
-        let addr_mode = OpAddrMode::from(inst);
-        match op_type {
-            StackOpTypes::Push => op_push(vm, addr_mode),
-            _ => {} 
-        }
-    }
 
-    pub fn op_push(vm : &mut super::Vm, addr_mode : OpAddrMode) {
+    fn get_addr_val(vm : &mut super::Vm, addr_mode : OpAddrMode) -> Option<i32> {
         // TODO: Make sure we don't try to read outside of RAM.
-        let arg : Option<i32> = match addr_mode {
+        match addr_mode {
             OpAddrMode::Immediate => { 
                 let mut val_arr : [u8; 4] = [0; 4];
                 for i in 0..4 {
@@ -115,7 +107,21 @@ mod stack_op_impl {
                 arg
             },
             _ => None,
-        };
+        }
+    }
+
+    pub (super) fn cycle_op(vm : &mut super::Vm, inst : u8) {
+        let op_type = StackOpTypes::from(inst);
+        let addr_mode = OpAddrMode::from(inst);
+        match op_type {
+            StackOpTypes::Push => op_push(vm, addr_mode),
+            _ => {} 
+        }
+    }
+
+    pub fn op_push(vm : &mut super::Vm, addr_mode : OpAddrMode) {
+        // TODO: Make sure we don't try to read outside of RAM.
+        let arg : Option<i32> = get_addr_val(vm, addr_mode);
         if let Some(p_val) = arg {
             vm.data_stack.push(p_val);
         }
