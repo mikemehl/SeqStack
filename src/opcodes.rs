@@ -63,6 +63,7 @@ impl From<u8> for StackOpTypes {
 pub enum OpCodes {
     PushImm    = 0b11111111,
     PushIndStk = 0b11111110,
+    PushIndImm = 0b11111101,
 }
 
 
