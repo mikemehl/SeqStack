@@ -45,7 +45,8 @@ impl From<u8> for OpAddrMode {
 
 // Stack family specific enums
 pub enum StackOpTypes {
-    Push = 0b00011100,
+    Push  = 0b00011100,
+    Store = 0b00000000,
     Invalid = 0b11111111,
 }
 

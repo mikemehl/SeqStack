@@ -7,7 +7,6 @@
 mod fp;
 mod stk;
 mod vm;
-mod opcodes;
 
 #[cfg(test)]
 mod test {

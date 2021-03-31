@@ -1,7 +1,10 @@
 /// Module with the central vm structures.
+
+mod opcodes;
+
 use crate::stk::Stack;
 use crate::fp;
-use crate::opcodes::*;
+use opcodes::*;
 
 const RAM_SIZE : usize = 1 << 15;
 const NUM_INTERRUPTS : usize = 8;
@@ -136,9 +139,7 @@ fn get_addr_val(vm : &mut Vm, addr_mode : &OpAddrMode) -> Option<i32> {
             vm.pc += 2;
             arg
         },
-        OpAddrMode::Stack => {
-    	vm.data_stack.pop()
-        }
+        OpAddrMode::Stack => vm.data_stack.pop(),
         _ => None,
     }
 }
@@ -146,7 +147,7 @@ fn get_addr_val(vm : &mut Vm, addr_mode : &OpAddrMode) -> Option<i32> {
 mod stack_op_impl {
     use crate::stk::Stack;
     use crate::fp;
-    use crate::opcodes::*;
+    use super::opcodes::*;
 
 
     pub (super) fn cycle_op(vm : &mut super::Vm, inst : u8) {
@@ -154,6 +155,7 @@ mod stack_op_impl {
         let addr_mode = OpAddrMode::from(inst);
         match op_type {
             StackOpTypes::Push => op_push(vm, addr_mode),
+            StackOpTypes::Store => {},
             _ => {} 
         }
     }
