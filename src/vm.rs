@@ -63,85 +63,91 @@ impl Vm {
 
 } 
 
+// Extracts the value based on the addressing mode. Increments the program counter if necessary.
+fn get_addr_val(vm : &mut Vm, addr_mode : &OpAddrMode) -> Option<i32> {
+    match addr_mode {
+        OpAddrMode::Immediate => { 
+            if vm.pc + 4 >= RAM_SIZE {
+                return None;
+            }
+            let mut val_arr : [u8; 4] = [0; 4];
+            for i in 0..4 {
+               val_arr[i] = vm.ram[vm.pc + i]; 
+            }
+            let val = i32::from_ne_bytes(val_arr);
+            vm.pc += 4;
+            Some(val)
+        },
+        OpAddrMode::IndexStack => {
+            if vm.pc + 2 >= RAM_SIZE {
+                return None;
+            }
+            let arg : Option<i32>;
+            let mut base_arr : [u8; 2] = [0; 2];
+            for i in 0..2 {
+                base_arr[i] = vm.ram[vm.pc + i];
+            } 
+            let base = i16::from_ne_bytes(base_arr) as isize;
+            if let Some(offset) = vm.data_stack.pop() {
+                let off = offset >> 16;
+                let val_addr : isize = base + off as isize;
+                if val_addr > 0 && val_addr < RAM_SIZE as isize {
+                    let mut val_arr : [u8; 4] = [0; 4];
+                    for i in 0..val_arr.len() {
+                        val_arr[i] = vm.ram[val_addr as usize + i];
+                    }
+                    let val = i32::from_ne_bytes(val_arr);
+                    arg = Some(val);
+                } else {
+                    arg = None;
+                }
+            } else {
+                arg = None;
+            }
+            vm.pc += 2;
+            arg
+        },
+        OpAddrMode::IndexImmediate => {
+            if vm.pc + 2 >= RAM_SIZE {
+                return None;
+            }
+            let arg : Option<i32>;
+            let mut offset_arr : [u8; 2] = [0; 2];
+            for i in 0..2 {
+                offset_arr[i] = vm.ram[vm.pc + i];
+            } 
+            let offset = i16::from_ne_bytes(offset_arr) as isize;
+            if let Some(base) = vm.data_stack.pop() {
+                let base = base >> 16;
+                let val_addr : isize = base as isize + offset;
+                if val_addr > 0 && val_addr < RAM_SIZE as isize {
+                    let mut val_arr : [u8; 4] = [0; 4];
+                    for i in 0..val_arr.len() {
+                        val_arr[i] = vm.ram[val_addr as usize + i];
+                    }
+                    let val = i32::from_ne_bytes(val_arr);
+                    arg = Some(val);
+                } else {
+                    arg = None;
+                }
+            } else {
+                arg = None;
+            }
+            vm.pc += 2;
+            arg
+        },
+        OpAddrMode::Stack => {
+    	vm.data_stack.pop()
+        }
+        _ => None,
+    }
+}
+
 mod stack_op_impl {
     use crate::stk::Stack;
     use crate::fp;
     use crate::opcodes::*;
 
-    // Extracts the value based on the addressing mode.
-    // Increments the program counter.
-    fn get_addr_val(vm : &mut super::Vm, addr_mode : &OpAddrMode) -> Option<i32> {
-        // TODO: Make sure we don't try to read outside of RAM.
-        // TODO: Can we hoist this out of here and make it work for all operations???
-        match addr_mode {
-            OpAddrMode::Immediate => { 
-                let mut val_arr : [u8; 4] = [0; 4];
-                for i in 0..4 {
-                   val_arr[i] = vm.ram[vm.pc + i]; 
-                }
-                let val = i32::from_ne_bytes(val_arr);
-                vm.pc += 4;
-                Some(val)
-            },
-            OpAddrMode::IndexStack => {
-                let arg : Option<i32>;
-                let mut base_arr : [u8; 2] = [0; 2];
-                for i in 0..2 {
-                    base_arr[i] = vm.ram[vm.pc + i];
-                } 
-                let base = i16::from_ne_bytes(base_arr) as isize;
-                if let Some(offset) = vm.data_stack.pop() {
-                    let off = offset >> 16;
-                    let val_addr : isize = base + off as isize;
-                    if val_addr > 0 && val_addr < super::RAM_SIZE as isize {
-                        let mut val_arr : [u8; 4] = [0; 4];
-                        for i in 0..val_arr.len() {
-                            val_arr[i] = vm.ram[val_addr as usize + i];
-                        }
-                        let val = i32::from_ne_bytes(val_arr);
-                        arg = Some(val);
-                    } else {
-                        arg = None;
-                    }
-                } else {
-                    arg = None;
-                }
-                vm.pc += 2;
-                arg
-            },
-            OpAddrMode::IndexImmediate => {
-                let arg : Option<i32>;
-                let mut offset_arr : [u8; 2] = [0; 2];
-                for i in 0..2 {
-                    offset_arr[i] = vm.ram[vm.pc + i];
-                } 
-                let offset = i16::from_ne_bytes(offset_arr) as isize;
-                if let Some(base) = vm.data_stack.pop() {
-                    let base = base >> 16;
-                    let val_addr : isize = base as isize + offset;
-                    if val_addr > 0 && val_addr < super::RAM_SIZE as isize {
-                        let mut val_arr : [u8; 4] = [0; 4];
-                        for i in 0..val_arr.len() {
-                            val_arr[i] = vm.ram[val_addr as usize + i];
-                        }
-                        let val = i32::from_ne_bytes(val_arr);
-                        arg = Some(val);
-                    } else {
-                        arg = None;
-                    }
-                } else {
-                    arg = None;
-                }
-                vm.pc += 2;
-                arg
-            },
-            OpAddrMode::Stack => {
-                vm.pc +=1;
-		vm.data_stack.pop()
-            }
-            _ => None,
-        }
-    }
 
     pub (super) fn cycle_op(vm : &mut super::Vm, inst : u8) {
         let op_type = StackOpTypes::from(inst);
@@ -153,7 +159,7 @@ mod stack_op_impl {
     }
 
     pub fn op_push(vm : &mut super::Vm, addr_mode : OpAddrMode) {
-        let arg : Option<i32> = get_addr_val(vm, &addr_mode);
+        let arg : Option<i32> = super::get_addr_val(vm, &addr_mode);
         if let Some(p_val) = arg {
             if  let OpAddrMode::Stack = addr_mode {
                 let addr = p_val >> 16 as isize;
@@ -316,5 +322,26 @@ mod test {
        let top_val = vm.data_stack.peek();
        assert!(!top_val.is_none(), "Data stack peek returned None on a nonempty stack.");
        assert_eq!(top_val.unwrap(), test_val_fp, "Data stack top was not expected value.");
+   }
+
+   #[test]
+   fn test_push_end_of_ram() {
+       let mut vm = init_vm();
+       let mut code : [u8; RAM_SIZE] = [0; RAM_SIZE];
+       code[RAM_SIZE -1] = OpCodes::PushImm as u8;
+       assert!(vm.load(&code));
+       vm.pc = RAM_SIZE - 1;
+       vm.cycle_once();
+       assert_eq!(vm.pc, RAM_SIZE, "PC not properly incremented in end of ram test: PUSH_IMM");
+       code[RAM_SIZE -1] = OpCodes::PushIndStk as u8;
+       assert!(vm.load(&code));
+       vm.pc = RAM_SIZE - 1;
+       vm.cycle_once();
+       assert_eq!(vm.pc, RAM_SIZE, "PC not properly incremented in end of ram test: PUSH_IND_STK");
+       code[RAM_SIZE -1] = OpCodes::PushIndImm as u8;
+       assert!(vm.load(&code));
+       vm.pc = RAM_SIZE - 1;
+       vm.cycle_once();
+       assert_eq!(vm.pc, RAM_SIZE, "PC not properly incremented in end of ram test: PUSH_IND_IMM");
    }
 }
