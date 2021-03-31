@@ -1,4 +1,4 @@
-
+/// Submodule encapsulating opcode enums.
 
 pub enum OpMasks {
     Family = 0b11100000,
