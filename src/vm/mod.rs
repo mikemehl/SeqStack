@@ -76,6 +76,7 @@ fn get_addr_val(vm : &mut Vm, addr_mode : &OpAddrMode) -> Option<i32> {
                 return None;
             }
             let mut val_arr : [u8; 4] = [0; 4];
+            // TODO: Use clone_from_slice() everywhere you do this!
             for i in 0..4 {
                val_arr[i] = vm.ram[vm.pc + i]; 
             }
