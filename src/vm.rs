@@ -311,7 +311,7 @@ mod test {
        code[0] = OpCodes::PushStk as u8;
        assert!(vm.load(&code));
        vm.cycle_once();
-       assert_eq!(vm.pc, 2, "Failed to increment program counter.");
+       assert_eq!(vm.pc, 1, "Failed to increment program counter.");
        assert!(!vm.data_stack.empty(), "Data stack empty after push.");
        let top_val = vm.data_stack.peek();
        assert!(!top_val.is_none(), "Data stack peek returned None on a nonempty stack.");
