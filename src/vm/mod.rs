@@ -67,7 +67,7 @@ impl Vm {
 
 } 
 
-// Extracts the value based on the addressing mode. Increments the program counter if necessary.
+// Extracts the value in memory based on the addressing mode. Increments the program counter if necessary.
 // Used in *_op_impl modules.
 fn get_addr_val(vm : &mut Vm, addr_mode : &OpAddrMode) -> Option<i32> {
     match addr_mode {
@@ -305,6 +305,30 @@ mod test {
             .clone_from_slice(&vm.ram[(test_addr >> 16) as usize.. (test_addr >> 16) as usize + 4]);
         let chk_val = i32::from_ne_bytes(chk_val_arr);
         assert_eq!(chk_val, test_val, "Store failed to save value in ram!");
+    }
+    
+    #[test]
+    fn test_store_idx_stk_op() {
+        let mut vm = init_vm();
+        let test_val = 666.0;
+        let test_val_fp = fp::float_to_fix(test_val);
+        vm.data_stack.push(test_val_fp);
+        let mut code : [u8; RAM_SIZE] = [0; RAM_SIZE];
+        let base : u16 = 0x123;
+        let offset = fp::float_to_fix(2.0);
+        let target_addr = base + 2;
+        vm.data_stack.push(offset);
+        code[0] = OpCodes::StoreIndStk as u8;
+        code[1..3].clone_from_slice(&base.to_ne_bytes());
+        assert!(vm.load(&code));
+        vm.cycle_once();
+        assert_eq!(vm.pc, 3, "Failed to increment program counter.");
+        assert!(vm.data_stack.empty(), "Data stack not empty after store.");
+        let mut chk_val_arr = [0u8; 4];
+        chk_val_arr[0..4]
+            .clone_from_slice(&vm.ram[target_addr as usize..target_addr as usize + 4]);
+        let chk_val = i32::from_ne_bytes(chk_val_arr);
+        assert_eq!(chk_val, test_val_fp, "Value at address not value to be stored!");
     }
 }
 
