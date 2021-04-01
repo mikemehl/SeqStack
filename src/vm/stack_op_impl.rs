@@ -7,7 +7,7 @@ pub (super) fn cycle_op(vm : &mut super::Vm, inst : u8) {
     let addr_mode = OpAddrMode::from(inst);
     match op_type {
         StackOpTypes::Push => op_push(vm, addr_mode),
-        StackOpTypes::Store => {},
+        StackOpTypes::Store => op_store(vm, addr_mode),
         _ => {} 
     }
 }
@@ -27,6 +27,15 @@ pub fn op_push(vm : &mut super::Vm, addr_mode : OpAddrMode) {
         }
         else {
             vm.data_stack.push(p_val);
+        }
+    }
+}
+
+pub fn op_store(vm : &mut super::Vm, addr_mode : OpAddrMode) {
+    if let Some(addr) = super::get_addr_val(vm, &addr_mode) {
+        let addr = (addr >> 16) as usize;
+        if let Some(data) = vm.data_stack.pop() {
+            vm.ram[addr..(addr+4)].clone_from_slice(&data.to_ne_bytes());
         }
     }
 }

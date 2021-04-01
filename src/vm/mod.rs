@@ -319,10 +319,7 @@ mod test {
         let mut code : [u8; RAM_SIZE] = [0; RAM_SIZE];
         // Store Immediate
         code[0] = OpCodes::StoreImm as u8; 
-        let addr = test_addr.to_ne_bytes();
-        for i in 1..(1 + addr.len()) {
-            code[i] = addr[i - 1];
-        }
+        code[1..5].clone_from_slice(&test_addr.to_ne_bytes());
         assert!(vm.load(&code));
         let test_val : i32 = fp::float_to_fix(1234.0);
         vm.data_stack.push(test_val);

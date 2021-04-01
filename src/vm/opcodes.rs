@@ -55,6 +55,7 @@ impl From<u8> for StackOpTypes {
         let a_masked = a & OpMasks::Type as u8;
         match a_masked {
             0b00011100 => StackOpTypes::Push,
+            0b00000000 => StackOpTypes::Store,
             _ => StackOpTypes::Invalid,
         }
     }
