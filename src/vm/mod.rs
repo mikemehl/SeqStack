@@ -35,8 +35,8 @@ impl Vm {
         Box::new(Vm {
             ram : ram.into_boxed_slice(), 
             pc : 0,
-            data_stack : data_stack,
-            call_stack : call_stack,
+            data_stack,
+            call_stack,
             interrupts : interrupts.into_boxed_slice(),
             ports : ports.into_boxed_slice(),
         })
@@ -76,10 +76,7 @@ fn get_addr_val(vm : &mut Vm, addr_mode : &OpAddrMode) -> Option<i32> {
                 return None;
             }
             let mut val_arr : [u8; 4] = [0; 4];
-            // TODO: Use clone_from_slice() everywhere you do this!
-            for i in 0..4 {
-               val_arr[i] = vm.ram[vm.pc + i]; 
-            }
+            val_arr[0..4].clone_from_slice(&vm.ram[vm.pc as usize..vm.pc as usize + 4]);
             let val = i32::from_ne_bytes(val_arr);
             vm.pc += 4;
             Some(val)
@@ -90,18 +87,14 @@ fn get_addr_val(vm : &mut Vm, addr_mode : &OpAddrMode) -> Option<i32> {
             }
             let arg : Option<i32>;
             let mut base_arr : [u8; 2] = [0; 2];
-            for i in 0..2 {
-                base_arr[i] = vm.ram[vm.pc + i];
-            } 
+            base_arr[0..2].clone_from_slice(&vm.ram[vm.pc as usize..vm.pc as usize + 2]);
             let base = i16::from_ne_bytes(base_arr) as isize;
             if let Some(offset) = vm.data_stack.pop() {
                 let off = offset >> 16;
                 let val_addr : isize = base + off as isize;
                 if val_addr > 0 && val_addr < RAM_SIZE as isize {
                     let mut val_arr : [u8; 4] = [0; 4];
-                    for i in 0..val_arr.len() {
-                        val_arr[i] = vm.ram[val_addr as usize + i];
-                    }
+                    val_arr[0..4].clone_from_slice(&vm.ram[val_addr as usize..val_addr as usize + 4]);
                     let val = i32::from_ne_bytes(val_arr);
                     arg = Some(val);
                 } else {
@@ -119,18 +112,14 @@ fn get_addr_val(vm : &mut Vm, addr_mode : &OpAddrMode) -> Option<i32> {
             }
             let arg : Option<i32>;
             let mut offset_arr : [u8; 2] = [0; 2];
-            for i in 0..2 {
-                offset_arr[i] = vm.ram[vm.pc + i];
-            } 
+            offset_arr[0..2].clone_from_slice(&vm.ram[vm.pc as usize..vm.pc as usize + 2]);
             let offset = i16::from_ne_bytes(offset_arr) as isize;
             if let Some(base) = vm.data_stack.pop() {
                 let base = base >> 16;
                 let val_addr : isize = base as isize + offset;
                 if val_addr > 0 && val_addr < RAM_SIZE as isize {
                     let mut val_arr : [u8; 4] = [0; 4];
-                    for i in 0..val_arr.len() {
-                        val_arr[i] = vm.ram[val_addr as usize + i];
-                    }
+                    val_arr[0..4].clone_from_slice(&vm.ram[val_addr as usize..val_addr as usize + 4]);
                     let val = i32::from_ne_bytes(val_arr);
                     arg = Some(val);
                 } else {
@@ -190,10 +179,7 @@ mod test {
         let mut code : [u8; RAM_SIZE] = [0; RAM_SIZE];
         // Push Immediate
         code[0] = OpCodes::PushImm as u8; 
-        let val = test_val.to_ne_bytes();
-        for i in 1..(1 + val.len()) {
-            code[i] = val[i - 1];
-        }
+        code[1..5].clone_from_slice(&test_val.to_ne_bytes());
         assert!(vm.load(&code));
         vm.cycle_once();
         assert_eq!(vm.pc, 5, "Failed to increment program counter.");
@@ -215,21 +201,16 @@ mod test {
         // Push Index Stack
         let mut vm = init_vm();
         let mut code : [u8; RAM_SIZE] = [0; RAM_SIZE];
-        let base : usize = 0x123;
+        let base : u16 = 0x123;
         let offset = fp::float_to_fix(2.0);
         let target_addr = base + 2;
         vm.data_stack.push(offset);
         let test_val = 666.0;
         let test_val_fp = fp::float_to_fix(test_val);
-        let test_val_bytes = test_val_fp.to_ne_bytes();
-        for i in 0..test_val_bytes.len() {
-            code[target_addr + i] = test_val_bytes[i];
-        }
+        code[target_addr as usize..(target_addr as usize + 4)]
+            .clone_from_slice(&test_val_fp.to_ne_bytes());
         code[0] = OpCodes::PushIndStk as u8;
-        let base_arr = base.to_ne_bytes();
-        for i in 1..(base_arr.len() + 1) {
-            code[i] = base_arr[i-1];
-        }
+        code[1..3].clone_from_slice(&base.to_ne_bytes());
         assert!(vm.load(&code));
         vm.cycle_once();
         assert_eq!(vm.pc, 3, "Failed to increment program counter.");
@@ -250,15 +231,10 @@ mod test {
         vm.data_stack.push(fp::float_to_fix(base as f32));
         let test_val = 666.0;
         let test_val_fp = fp::float_to_fix(test_val);
-        let test_val_bytes = test_val_fp.to_ne_bytes();
-        for i in 0..test_val_bytes.len() {
-            code[target_addr + i] = test_val_bytes[i];
-        }
+        code[target_addr as usize..(target_addr as usize + 4)]
+            .clone_from_slice(&test_val_fp.to_ne_bytes());
         code[0] = OpCodes::PushIndImm as u8;
-        let offset_arr = offset.to_ne_bytes();
-        for i in 1..(offset_arr.len() + 1) {
-            code[i] = offset_arr[i-1];
-        }
+        code[1..3].clone_from_slice(&offset.to_ne_bytes());
         assert!(vm.load(&code));
         vm.cycle_once();
         assert_eq!(vm.pc, 3, "Failed to increment program counter.");
@@ -277,10 +253,8 @@ mod test {
         vm.data_stack.push(fp::float_to_fix(target_addr as f32));
         let test_val = 666.0;
         let test_val_fp = fp::float_to_fix(test_val);
-        let test_val_bytes = test_val_fp.to_ne_bytes();
-        for i in 0..test_val_bytes.len() {
-            code[target_addr + i] = test_val_bytes[i];
-        }
+        code[target_addr as usize..(target_addr as usize + 4)]
+            .clone_from_slice(&test_val_fp.to_ne_bytes());
         code[0] = OpCodes::PushStk as u8;
         assert!(vm.load(&code));
         vm.cycle_once();
@@ -327,9 +301,8 @@ mod test {
         assert_eq!(vm.pc, 5, "Failed to increment program counter.");
         assert!(vm.data_stack.empty(), "Data stack not empty after store.");
         let mut chk_val_arr = [0u8; 4];
-        for i in 0..chk_val_arr.len() {
-            chk_val_arr[i] = vm.ram[(test_addr >> 16) as usize + i];
-        }
+        chk_val_arr[0..4]
+            .clone_from_slice(&vm.ram[(test_addr >> 16) as usize.. (test_addr >> 16) as usize + 4]);
         let chk_val = i32::from_ne_bytes(chk_val_arr);
         assert_eq!(chk_val, test_val, "Store failed to save value in ram!");
     }
