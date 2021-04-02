@@ -67,7 +67,7 @@ impl Vm {
 
 } 
 
-// Extracts the value in memory based on the addressing mode. Increments the program counter if necessary.
+// Extracts the value in memory or on the stack based on the addressing mode. Increments the program counter if necessary.
 // Used in *_op_impl modules.
 fn get_addr_val(vm : &mut Vm, addr_mode : &OpAddrMode) -> Option<i32> {
     match addr_mode {
@@ -132,6 +132,65 @@ fn get_addr_val(vm : &mut Vm, addr_mode : &OpAddrMode) -> Option<i32> {
             arg
         },
         OpAddrMode::Stack => vm.data_stack.pop(),
+        _ => None,
+    }
+}
+
+fn get_addr(vm : &mut Vm, addr_mode : &OpAddrMode) -> Option<isize> {
+    match addr_mode {
+        OpAddrMode::Immediate => { 
+            if vm.pc + 4 >= RAM_SIZE {
+                return None;
+            }
+            let mut val_arr : [u8; 4] = [0; 4];
+            val_arr[0..4].clone_from_slice(&vm.ram[vm.pc as usize..vm.pc as usize + 4]);
+            let val = (i32::from_ne_bytes(val_arr) >> 16) as isize;
+            vm.pc += 4;
+            Some(val)
+        },
+        OpAddrMode::IndexStack => {
+            if vm.pc + 2 >= RAM_SIZE {
+                return None;
+            }
+            let mut arg : Option<isize> = None;
+            let mut base_arr : [u8; 2] = [0; 2];
+            base_arr[0..2].clone_from_slice(&vm.ram[vm.pc as usize..vm.pc as usize + 2]);
+            let base = i16::from_ne_bytes(base_arr) as isize;
+            if let Some(offset) = vm.data_stack.pop() {
+                let off = offset >> 16;
+                let val_addr : isize = base + off as isize;
+                if val_addr > 0 && val_addr < RAM_SIZE as isize {
+                    arg = Some(val_addr);
+                }
+            }
+            vm.pc += 2;
+            arg
+        },
+        OpAddrMode::IndexImmediate => {
+            if vm.pc + 2 >= RAM_SIZE {
+                return None;
+            }
+            let mut arg : Option<isize> = None;
+            let mut offset_arr : [u8; 2] = [0; 2];
+            offset_arr[0..2].clone_from_slice(&vm.ram[vm.pc as usize..vm.pc as usize + 2]);
+            let offset = i16::from_ne_bytes(offset_arr) as isize;
+            if let Some(base) = vm.data_stack.pop() {
+                let base = base >> 16;
+                let val_addr : isize = base as isize + offset;
+                if val_addr > 0 && val_addr < RAM_SIZE as isize {
+                    arg = Some(val_addr);
+                }
+            }
+            vm.pc += 2;
+            arg
+        },
+        OpAddrMode::Stack => {
+            let mut arg : Option<isize> = None;
+            if let Some(addr) = vm.data_stack.pop() {
+                arg = Some((addr >> 16) as isize);
+            }
+            arg
+        },
         _ => None,
     }
 }
