@@ -353,6 +353,51 @@ mod test {
         let chk_val = i32::from_ne_bytes(chk_val_arr);
         assert_eq!(chk_val, test_val_fp, "Value at address not value to be stored!");
     }
+    #[test]
+    fn test_store_idx_imm_op() {
+        let mut vm = init_vm();
+        let test_val = 666.0;
+        let test_val_fp = fp::float_to_fix(test_val);
+        vm.data_stack.push(test_val_fp);
+        let mut code : [u8; RAM_SIZE] = [0; RAM_SIZE];
+        let base = fp::float_to_fix(123.0);
+        let offset = 2u16;
+        let target_addr = 123 + 2;
+        vm.data_stack.push(base);
+        code[0] = OpCodes::StoreIndStk as u8;
+        code[1..3].clone_from_slice(&offset.to_ne_bytes());
+        assert!(vm.load(&code));
+        vm.cycle_once();
+        assert_eq!(vm.pc, 3, "Failed to increment program counter.");
+        assert!(vm.data_stack.empty(), "Data stack not empty after store.");
+        let mut chk_val_arr = [0u8; 4];
+        chk_val_arr[0..4]
+            .clone_from_slice(&vm.ram[target_addr as usize..target_addr as usize + 4]);
+        let chk_val = i32::from_ne_bytes(chk_val_arr);
+        assert_eq!(chk_val, test_val_fp, "Value at address not value to be stored!");
+    }
+    
+    #[test]
+    fn test_store_stk_op() {
+        let mut vm = init_vm();
+        let test_val = 666.0;
+        let test_val_fp = fp::float_to_fix(test_val);
+        vm.data_stack.push(test_val_fp);
+        let mut code : [u8; RAM_SIZE] = [0; RAM_SIZE];
+        let target_addr = 123u16;
+        let target_addr_fp = fp::float_to_fix(target_addr as f32);
+        vm.data_stack.push(target_addr_fp);
+        code[0] = OpCodes::StoreStk as u8;
+        assert!(vm.load(&code));
+        vm.cycle_once();
+        assert_eq!(vm.pc, 1, "Failed to increment program counter.");
+        assert!(vm.data_stack.empty(), "Data stack not empty after store.");
+        let mut chk_val_arr = [0u8; 4];
+        chk_val_arr[0..4]
+            .clone_from_slice(&vm.ram[target_addr as usize..target_addr as usize + 4]);
+        let chk_val = i32::from_ne_bytes(chk_val_arr);
+        assert_eq!(chk_val, test_val_fp, "Value at address not value to be stored!");
+    }
 }
 
 

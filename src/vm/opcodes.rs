@@ -69,6 +69,8 @@ pub enum OpCodes {
     PushStk     = 0b11111100,
     StoreImm    = 0b11100011,
     StoreIndStk = 0b11100010,
+    StoreIndImm = 0b11100001,
+    StoreStk    = 0b11100000,
 }
 
 
