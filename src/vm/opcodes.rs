@@ -76,7 +76,7 @@ pub enum OpCodes {
     StoreIndImm = 0b11100001,
     StoreStk    = 0b11100000,
     Pop         = 0b11111000,
-    Dup         = 0b11100100,
+    Dup         = 0b11110000,
 }
 
 

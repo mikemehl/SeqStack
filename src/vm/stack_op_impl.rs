@@ -9,6 +9,11 @@ pub (super) fn cycle_op(vm : &mut super::Vm, inst : u8) {
         StackOpTypes::Push => op_push(vm, addr_mode),
         StackOpTypes::Store => op_store(vm, addr_mode),
         StackOpTypes::Pop => { let _ = vm.data_stack.pop(); },
+        StackOpTypes::Dup => { 
+            if let Some(val) = vm.data_stack.peek() {
+                vm.data_stack.push(val);
+            }
+        },
         _ => {} 
     }
 }
@@ -294,7 +299,6 @@ mod test {
         vm.cycle_once();
         assert_eq!(vm.pc, 1, "Failed to increment program counter.");
         assert!(!vm.data_stack.empty(), "Data stack empty after dup.");
-        // TODO: Check that we duped!!!
         let top = vm.data_stack.pop();
         assert!(!top.is_none(), "Pop failed after dup!");
         let next = vm.data_stack.pop();
