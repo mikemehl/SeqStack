@@ -27,11 +27,10 @@ Where supported, addressing modes are represented by two bits in the instruction
     * 000 - Store
   * Adressing Modes: Stack.
     * 110 - Pop
-    * 101 - Drop
-    * 100 - Dup
-    * 011 - Rot
-    * 010 - MovToRts
-    * 001 - MovFromRts
+    * 101 - Dup
+    * 100 - Rot
+    * 011 - MovToRts
+    * 010 - MovFromRts
 * 110 - Arithmetic
   * Adressing Modes: Stack only.
     * 11 - Add
