@@ -8,6 +8,7 @@ pub (super) fn cycle_op(vm : &mut super::Vm, inst : u8) {
     match op_type {
         StackOpTypes::Push => op_push(vm, addr_mode),
         StackOpTypes::Store => op_store(vm, addr_mode),
+        StackOpTypes::Pop => { let _ = vm.data_stack.pop(); },
         _ => {} 
     }
 }

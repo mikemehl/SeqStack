@@ -47,6 +47,7 @@ impl From<u8> for OpAddrMode {
 pub enum StackOpTypes {
     Push  = 0b00011100,
     Store = 0b00000000,
+    Pop   = 0b00011000,
     Invalid = 0b11111111,
 }
 
@@ -56,6 +57,7 @@ impl From<u8> for StackOpTypes {
         match a_masked {
             0b00011100 => StackOpTypes::Push,
             0b00000000 => StackOpTypes::Store,
+            0b00011000 => StackOpTypes::Pop,
             _ => StackOpTypes::Invalid,
         }
     }
