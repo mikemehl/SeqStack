@@ -305,6 +305,34 @@ mod test {
         assert!(!next.is_none(), "Second pop failed after dup!");
         assert_eq!(top.unwrap(), next.unwrap(), "Dup didn't duplicate!");
     }
+    
+    #[test]
+    fn test_rot_op() {
+        // a b c -> b c a
+        let mut vm = init_vm();
+        let a = 666.0;
+        let a_fp = fp::float_to_fix(a);
+        let b = 111.0;
+        let b_fp = fp::float_to_fix(b);
+        let c = 111.0;
+        let c_fp = fp::float_to_fix(c);
+        vm.data_stack.push(c_fp);
+        vm.data_stack.push(b_fp);
+        vm.data_stack.push(a_fp);
+        let code = [OpCodes::Rot as u8; 1];
+        assert!(vm.load(&code));
+        vm.cycle_once();
+        assert_eq!(vm.pc, 1, "Failed to increment program counter.");
+        let top = vm.data_stack.pop();
+        assert!(!top.is_none(), "Top empty after rot!");
+        assert_eq!(top.unwrap(), b_fp, "Unexpected value in stack!");
+        let top = vm.data_stack.pop();
+        assert!(!top.is_none(), "Top empty after rot!");
+        assert_eq!(top.unwrap(), c_fp, "Unexpected value in stack!");
+        let top = vm.data_stack.pop();
+        assert!(!top.is_none(), "Top empty after rot!");
+        assert_eq!(top.unwrap(), c_fp, "Unexpected value in stack!");
+    }
 }
 
 
