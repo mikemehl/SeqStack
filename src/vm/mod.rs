@@ -407,9 +407,14 @@ mod test {
         vm.data_stack.push(test_val_fp);
         let mut code = [0u8; RAM_SIZE];
         code[0] = OpCodes::Pop as u8;
+        code[1] = OpCodes::Pop as u8;
         assert!(vm.load(&code));
         vm.cycle_once();
         assert_eq!(vm.pc, 1, "Failed to increment program counter.");
+        assert!(vm.data_stack.empty(), "Data stack not empty after pop.");
+        // Cycle again, make sure things don't fall apart.
+        vm.cycle_once();
+        assert_eq!(vm.pc, 2, "Failed to increment program counter.");
         assert!(vm.data_stack.empty(), "Data stack not empty after pop.");
     }
 }
