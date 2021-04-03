@@ -48,6 +48,7 @@ pub enum StackOpTypes {
     Push  = 0b00011100,
     Store = 0b00000000,
     Pop   = 0b00011000,
+    Dup   = 0b00010000,
     Invalid = 0b11111111,
 }
 
@@ -58,6 +59,7 @@ impl From<u8> for StackOpTypes {
             0b00011100 => StackOpTypes::Push,
             0b00000000 => StackOpTypes::Store,
             0b00011000 => StackOpTypes::Pop,
+            0b00010000 => StackOpTypes::Dup,
             _ => StackOpTypes::Invalid,
         }
     }
@@ -74,6 +76,7 @@ pub enum OpCodes {
     StoreIndImm = 0b11100001,
     StoreStk    = 0b11100000,
     Pop         = 0b11111000,
+    Dup         = 0b11100100,
 }
 
 

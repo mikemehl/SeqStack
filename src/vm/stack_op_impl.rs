@@ -60,24 +60,6 @@ mod test {
     }
     
     #[test]
-    fn test_init() {
-        let _vm = init_vm();
-    }
-    
-    #[test]
-    fn test_load() {
-        const TEST_VAL : u8 = 66;
-        let mut vm = init_vm();
-        let code : [u8; RAM_SIZE] = [TEST_VAL; RAM_SIZE];
-        assert!(vm.load(&code));
-        for b in vm.ram.iter() {
-            assert_eq!(*b, TEST_VAL);
-        }
-        let code : [u8; RAM_SIZE + 10] = [TEST_VAL; RAM_SIZE + 10];
-        assert!(!vm.load(&code));
-    }
-    
-    #[test]
     fn test_push_imm_op() {
         let test_val : i32 = fp::float_to_fix(66.0);
         let mut vm = init_vm();
@@ -298,6 +280,26 @@ mod test {
         vm.cycle_once();
         assert_eq!(vm.pc, 2, "Failed to increment program counter.");
         assert!(vm.data_stack.empty(), "Data stack not empty after pop.");
+    }
+
+    #[test]
+    fn test_dup_op() {
+        let mut vm = init_vm();
+        let test_val = 666.0;
+        let test_val_fp = fp::float_to_fix(test_val);
+        vm.data_stack.push(test_val_fp);
+        let mut code = [0u8; RAM_SIZE];
+        code[0] = OpCodes::Dup as u8;
+        assert!(vm.load(&code));
+        vm.cycle_once();
+        assert_eq!(vm.pc, 1, "Failed to increment program counter.");
+        assert!(!vm.data_stack.empty(), "Data stack empty after dup.");
+        // TODO: Check that we duped!!!
+        let top = vm.data_stack.pop();
+        assert!(!top.is_none(), "Pop failed after dup!");
+        let next = vm.data_stack.pop();
+        assert!(!next.is_none(), "Second pop failed after dup!");
+        assert_eq!(top.unwrap(), next.unwrap(), "Dup didn't duplicate!");
     }
 }
 
