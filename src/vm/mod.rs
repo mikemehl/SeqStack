@@ -398,6 +398,20 @@ mod test {
         let chk_val = i32::from_ne_bytes(chk_val_arr);
         assert_eq!(chk_val, test_val_fp, "Value at address not value to be stored!");
     }
+
+    #[test]
+    fn test_pop_op() {
+        let mut vm = init_vm();
+        let test_val = 666.0;
+        let test_val_fp = fp::float_to_fix(test_val);
+        vm.data_stack.push(test_val_fp);
+        let mut code = [0u8; RAM_SIZE];
+        code[0] = OpCodes::Pop as u8;
+        assert!(vm.load(&code));
+        vm.cycle_once();
+        assert_eq!(vm.pc, 1, "Failed to increment program counter.");
+        assert!(vm.data_stack.empty(), "Data stack not empty after pop.");
+    }
 }
 
 
