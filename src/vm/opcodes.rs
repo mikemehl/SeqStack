@@ -13,7 +13,7 @@ pub enum OpFamily {
 }
 
 impl From<u8> for OpFamily {
-    fn from(a : u8) -> Self {
+    fn from(a: u8) -> Self {
         let a_masked = a & OpMasks::Family as u8;
         match a_masked {
             0b11100000 => OpFamily::StackOp,
@@ -31,7 +31,7 @@ pub enum OpAddrMode {
 }
 
 impl From<u8> for OpAddrMode {
-    fn from(a : u8) -> Self {
+    fn from(a: u8) -> Self {
         let a_masked = a & OpMasks::AddrMode as u8;
         match a_masked {
             0b00000011 => OpAddrMode::Immediate,
@@ -45,16 +45,16 @@ impl From<u8> for OpAddrMode {
 
 // Stack family specific enums
 pub enum StackOpTypes {
-    Push  = 0b00011100,
+    Push = 0b00011100,
     Store = 0b00000000,
-    Pop   = 0b00011000,
-    Dup   = 0b00010100,
-    Rot   = 0b00010000,
+    Pop = 0b00011000,
+    Dup = 0b00010100,
+    Rot = 0b00010000,
     Invalid = 0b11111111,
 }
 
 impl From<u8> for StackOpTypes {
-    fn from(a : u8) -> Self {
+    fn from(a: u8) -> Self {
         let a_masked = a & OpMasks::Type as u8;
         match a_masked {
             0b00011100 => StackOpTypes::Push,
@@ -69,17 +69,15 @@ impl From<u8> for StackOpTypes {
 
 // All Opcodes
 pub enum OpCodes {
-    PushImm     = 0b11111111,
-    PushIndStk  = 0b11111110,
-    PushIndImm  = 0b11111101,
-    PushStk     = 0b11111100,
-    StoreImm    = 0b11100011,
+    PushImm = 0b11111111,
+    PushIndStk = 0b11111110,
+    PushIndImm = 0b11111101,
+    PushStk = 0b11111100,
+    StoreImm = 0b11100011,
     StoreIndStk = 0b11100010,
     StoreIndImm = 0b11100001,
-    StoreStk    = 0b11100000,
-    Pop         = 0b11111000,
-    Dup         = 0b11110100,
-    Rot         = 0b11110000,
+    StoreStk = 0b11100000,
+    Pop = 0b11111000,
+    Dup = 0b11110100,
+    Rot = 0b11110000,
 }
-
-
