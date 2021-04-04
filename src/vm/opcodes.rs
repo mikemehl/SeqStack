@@ -50,6 +50,7 @@ pub enum StackOpTypes {
     Pop = 0b00011000,
     Dup = 0b00010100,
     Rot = 0b00010000,
+    Swap = 0b00001100,
     Invalid = 0b11111111,
 }
 
@@ -62,6 +63,7 @@ impl From<u8> for StackOpTypes {
             0b00011000 => StackOpTypes::Pop,
             0b00010100 => StackOpTypes::Dup,
             0b00010000 => StackOpTypes::Rot,
+            0b00001100 => StackOpTypes::Swap,
             _ => StackOpTypes::Invalid,
         }
     }
@@ -80,4 +82,5 @@ pub enum OpCodes {
     Pop = 0b11111000,
     Dup = 0b11110100,
     Rot = 0b11110000,
+    Swap = 0b11101100,
 }

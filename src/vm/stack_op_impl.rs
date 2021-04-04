@@ -36,6 +36,19 @@ pub(super) fn cycle_op(vm: &mut super::Vm, inst: u8) {
             vm.data_stack.push(c.unwrap());
             vm.data_stack.push(b.unwrap());
         }
+        StackOpTypes::Swap => {
+            let a = vm.data_stack.pop();
+            if a.is_none() {
+                return;
+            }
+            let b = vm.data_stack.pop();
+            if b.is_none() {
+                vm.data_stack.push(a.unwrap());
+                return;
+            }
+            vm.data_stack.push(a.unwrap());
+            vm.data_stack.push(b.unwrap());
+        }
         _ => {}
     }
 }
@@ -413,5 +426,37 @@ mod test {
         let top = vm.data_stack.pop();
         assert!(!top.is_none(), "Top empty after rot!");
         assert_eq!(top.unwrap(), c_fp, "Unexpected value in stack!");
+    }
+
+    #[test]
+    fn test_swap_op() {
+        // a b c -> b c a
+        let mut vm = init_vm();
+        let a = 666.0;
+        let a_fp = fp::float_to_fix(a);
+        let b = 111.0;
+        let b_fp = fp::float_to_fix(b);
+        vm.data_stack.push(b_fp);
+        vm.data_stack.push(a_fp);
+        let code = [OpCodes::Swap as u8; 1];
+        assert!(vm.load(&code));
+        vm.cycle_once();
+        assert_eq!(vm.pc, 1, "Failed to increment program counter.");
+        let top = vm.data_stack.pop();
+        assert!(!top.is_none(), "Top empty after swap!");
+        assert_eq!(top.unwrap(), b_fp, "Unexpected value in stack!");
+        let top = vm.data_stack.pop();
+        assert!(!top.is_none(), "Top empty after rot!");
+        assert_eq!(top.unwrap(), a_fp, "Unexpected value in stack!");
+        // If the stack is too low, do nothing.
+        let mut vm = init_vm();
+        vm.data_stack.push(b_fp);
+        let code = [OpCodes::Rot as u8; 1];
+        assert!(vm.load(&code));
+        vm.cycle_once();
+        assert_eq!(vm.pc, 1, "Failed to increment program counter.");
+        let top = vm.data_stack.pop();
+        assert!(!top.is_none(), "Top empty after rot!");
+        assert_eq!(top.unwrap(), b_fp, "Unexpected value in stack!");
     }
 }
