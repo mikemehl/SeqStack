@@ -46,7 +46,7 @@ impl Vm {
         if code_in.len() > self.ram.len() {
             return false;
         }
-        self.ram.clone_from_slice(code_in);
+        self.ram[0..code_in.len()].clone_from_slice(code_in);
         true
     }
 
@@ -189,6 +189,11 @@ mod test {
         const TEST_VAL : u8 = 66;
         let mut vm = init_vm();
         let code : [u8; RAM_SIZE] = [TEST_VAL; RAM_SIZE];
+        assert!(vm.load(&code));
+        for b in vm.ram.iter() {
+            assert_eq!(*b, TEST_VAL);
+        }
+        let code : [u8; RAM_SIZE - 66] = [TEST_VAL; RAM_SIZE - 66];
         assert!(vm.load(&code));
         for b in vm.ram.iter() {
             assert_eq!(*b, TEST_VAL);
