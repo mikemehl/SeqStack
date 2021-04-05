@@ -9,6 +9,7 @@ pub enum OpMasks {
 
 pub enum OpFamily {
     StackOp,
+    ArithmeticOp,
     Invalid,
 }
 
@@ -16,17 +17,18 @@ impl From<u8> for OpFamily {
     fn from(a: u8) -> Self {
         let a_masked = a & OpMasks::Family as u8;
         match a_masked {
-            0b11100000 => OpFamily::StackOp,
+            0b111_000_00 => OpFamily::StackOp,
+            0b110_000_00 => OpFamily::ArithmeticOp,
             _ => OpFamily::Invalid,
         }
     }
 }
 
 pub enum OpAddrMode {
-    Immediate = 0b00000011,
-    IndexStack = 0b00000010,
-    IndexImmediate = 0b00000001,
-    Stack = 0b00000000,
+    Immediate = 0b000_000_11,
+    IndexStack = 0b000_000_10,
+    IndexImmediate = 0b000_000_01,
+    Stack = 0b000_000_00,
     Invalid = 0b11111111,
 }
 
@@ -34,10 +36,10 @@ impl From<u8> for OpAddrMode {
     fn from(a: u8) -> Self {
         let a_masked = a & OpMasks::AddrMode as u8;
         match a_masked {
-            0b00000011 => OpAddrMode::Immediate,
-            0b00000010 => OpAddrMode::IndexStack,
-            0b00000001 => OpAddrMode::IndexImmediate,
-            0b00000000 => OpAddrMode::Stack,
+            0b000_000_11 => OpAddrMode::Immediate,
+            0b000_000_10 => OpAddrMode::IndexStack,
+            0b000_000_01 => OpAddrMode::IndexImmediate,
+            0b000_000_00 => OpAddrMode::Stack,
             _ => OpAddrMode::Invalid,
         }
     }
@@ -45,14 +47,14 @@ impl From<u8> for OpAddrMode {
 
 // Stack family specific enums
 pub enum StackOpTypes {
-    Push = 0b00011100,
-    Store = 0b00000000,
-    Pop = 0b00011000,
-    Dup = 0b00010100,
-    Rot = 0b00010000,
-    Swap = 0b00001100,
-    MovToRts = 0b00001000,
-    MovFromRts = 0b00000100,
+    Push = 0b000_111_00,
+    Store = 0b000_000_00,
+    Pop = 0b000_110_00,
+    Dup = 0b000_101_00,
+    Rot = 0b000_100_00,
+    Swap = 0b000_011_00,
+    MovToRts = 0b000_010_00,
+    MovFromRts = 0b000_001_00,
     Invalid = 0b11111111,
 }
 
@@ -60,14 +62,14 @@ impl From<u8> for StackOpTypes {
     fn from(a: u8) -> Self {
         let a_masked = a & OpMasks::Type as u8;
         match a_masked {
-            0b00011100 => StackOpTypes::Push,
-            0b00000000 => StackOpTypes::Store,
-            0b00011000 => StackOpTypes::Pop,
-            0b00010100 => StackOpTypes::Dup,
-            0b00010000 => StackOpTypes::Rot,
-            0b00001100 => StackOpTypes::Swap,
-            0b00001000 => StackOpTypes::MovToRts,
-            0b00000100 => StackOpTypes::MovFromRts,
+            0b000_111_00 => StackOpTypes::Push,
+            0b000_000_00 => StackOpTypes::Store,
+            0b000_110_00 => StackOpTypes::Pop,
+            0b000_101_00 => StackOpTypes::Dup,
+            0b000_100_00 => StackOpTypes::Rot,
+            0b000_011_00 => StackOpTypes::Swap,
+            0b000_010_00 => StackOpTypes::MovToRts,
+            0b000_001_00 => StackOpTypes::MovFromRts,
             _ => StackOpTypes::Invalid,
         }
     }
@@ -75,10 +77,10 @@ impl From<u8> for StackOpTypes {
 
 // Arithmetic family specific enums
 pub enum ArithmeticOpTypes {
-    Add = 0b00011000,
-    Sub = 0b00010000,
-    Mul = 0b00001000,
-    Div = 0b00000000,
+    Add = 0b000_110_00,
+    Sub = 0b000_100_00,
+    Mul = 0b000_010_00,
+    Div = 0b000_000_00,
     Invalid = 0b11111111,
 }
 
@@ -86,10 +88,10 @@ impl From<u8> for ArithmeticOpTypes {
     fn from(a: u8) -> Self {
         let a_masked = a & OpMasks::Type as u8;
         match a_masked {
-            0b00011000 => ArithmeticOpTypes::Add,
-            0b00010000 => ArithmeticOpTypes::Sub,
-            0b00001000 => ArithmeticOpTypes::Mul,
-            0b00000000 => ArithmeticOpTypes::Div,
+            0b000_11_000 => ArithmeticOpTypes::Add,
+            0b000_10_000 => ArithmeticOpTypes::Sub,
+            0b000_01_000 => ArithmeticOpTypes::Mul,
+            0b000_00_000 => ArithmeticOpTypes::Div,
             _ => ArithmeticOpTypes::Invalid,
         }
     }
@@ -97,19 +99,19 @@ impl From<u8> for ArithmeticOpTypes {
 
 // All Opcodes
 pub enum OpCodes {
-    PushImm = 0b11111111,
-    PushIndStk = 0b11111110,
-    PushIndImm = 0b11111101,
-    PushStk = 0b11111100,
-    StoreImm = 0b11100011,
-    StoreIndStk = 0b11100010,
-    StoreIndImm = 0b11100001,
-    StoreStk = 0b11100000,
-    Pop = 0b11111000,
-    Dup = 0b11110100,
-    Rot = 0b11110000,
-    Swap = 0b11101100,
-    MovToRts = 0b11101000,
-    MovFromRts = 0b11100100,
+    PushImm = 0b111_111_11,
+    PushIndStk = 0b111_111_10,
+    PushIndImm = 0b111_111_01,
+    PushStk = 0b111_111_00,
+    StoreImm = 0b111_000_11,
+    StoreIndStk = 0b111_000_10,
+    StoreIndImm = 0b111_000_01,
+    StoreStk = 0b111_000_00,
+    Pop = 0b111_110_00,
+    Dup = 0b111_101_00,
+    Rot = 0b111_100_00,
+    Swap = 0b111_011_00,
+    MovToRts = 0b111_010_00,
+    MovFromRts = 0b111_001_00,
     Add = 0b110_11_000,
 }
