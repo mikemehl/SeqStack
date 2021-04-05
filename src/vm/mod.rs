@@ -1,7 +1,7 @@
+mod arithmetic_op_impl;
 /// Module with the central vm structures.
 mod opcodes;
 mod stack_op_impl;
-mod arithmetic_op_impl;
 
 use crate::fp;
 use crate::stk::Stack;
@@ -60,9 +60,8 @@ impl Vm {
         // Figure out which group it belongs to.
         let fam: OpFamily = OpFamily::from(next_inst);
         match fam {
-            OpFamily::StackOp => {
-                stack_op_impl::cycle_op(self, next_inst);
-            }
+            OpFamily::StackOp => stack_op_impl::cycle_op(self, next_inst),
+            OpFamily::ArithmeticOp => arithmetic_op_impl::cycle_op(self, next_inst),
             _ => {}
         }
     }

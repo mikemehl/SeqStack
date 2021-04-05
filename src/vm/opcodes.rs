@@ -1,18 +1,21 @@
 /// Submodule encapsulating opcode enums.
 
+#[allow(clippy::unusual_byte_groupings)]
 pub enum OpMasks {
-    Family = 0b11100000,
-    Type = 0b00011100,
-    AddrMode = 0b00000011,
+    Family = 0b111_00000,
+    Type = 0b000_111_00,
+    AddrMode = 0b000000_11,
     Invalid = 0b00000000,
 }
 
+#[allow(clippy::unusual_byte_groupings)]
 pub enum OpFamily {
     StackOp,
     ArithmeticOp,
     Invalid,
 }
 
+#[allow(clippy::unusual_byte_groupings)]
 impl From<u8> for OpFamily {
     fn from(a: u8) -> Self {
         let a_masked = a & OpMasks::Family as u8;
@@ -24,6 +27,7 @@ impl From<u8> for OpFamily {
     }
 }
 
+#[allow(clippy::unusual_byte_groupings)]
 pub enum OpAddrMode {
     Immediate = 0b000_000_11,
     IndexStack = 0b000_000_10,
@@ -32,6 +36,7 @@ pub enum OpAddrMode {
     Invalid = 0b11111111,
 }
 
+#[allow(clippy::unusual_byte_groupings)]
 impl From<u8> for OpAddrMode {
     fn from(a: u8) -> Self {
         let a_masked = a & OpMasks::AddrMode as u8;
@@ -46,6 +51,7 @@ impl From<u8> for OpAddrMode {
 }
 
 // Stack family specific enums
+#[allow(clippy::unusual_byte_groupings)]
 pub enum StackOpTypes {
     Push = 0b000_111_00,
     Store = 0b000_000_00,
@@ -58,6 +64,7 @@ pub enum StackOpTypes {
     Invalid = 0b11111111,
 }
 
+#[allow(clippy::unusual_byte_groupings)]
 impl From<u8> for StackOpTypes {
     fn from(a: u8) -> Self {
         let a_masked = a & OpMasks::Type as u8;
@@ -76,6 +83,7 @@ impl From<u8> for StackOpTypes {
 }
 
 // Arithmetic family specific enums
+#[allow(clippy::unusual_byte_groupings)]
 pub enum ArithmeticOpTypes {
     Add = 0b000_110_00,
     Sub = 0b000_100_00,
@@ -84,6 +92,7 @@ pub enum ArithmeticOpTypes {
     Invalid = 0b11111111,
 }
 
+#[allow(clippy::unusual_byte_groupings)]
 impl From<u8> for ArithmeticOpTypes {
     fn from(a: u8) -> Self {
         let a_masked = a & OpMasks::Type as u8;
@@ -98,6 +107,7 @@ impl From<u8> for ArithmeticOpTypes {
 }
 
 // All Opcodes
+#[allow(clippy::unusual_byte_groupings)]
 pub enum OpCodes {
     PushImm = 0b111_111_11,
     PushIndStk = 0b111_111_10,
