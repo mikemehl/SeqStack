@@ -10,12 +10,12 @@ pub(super) fn cycle_op(vm: &mut super::Vm, inst: u8) {
         StackOpTypes::Store => op_store(vm, addr_mode),
         StackOpTypes::Pop => {
             let _ = vm.data_stack.pop();
-        }
+        },
         StackOpTypes::Dup => {
             if let Some(val) = vm.data_stack.peek() {
                 vm.data_stack.push(val);
             }
-        }
+        },
         StackOpTypes::Rot => {
             let a = vm.data_stack.pop();
             if a.is_none() {
@@ -35,7 +35,7 @@ pub(super) fn cycle_op(vm: &mut super::Vm, inst: u8) {
             vm.data_stack.push(a.unwrap());
             vm.data_stack.push(c.unwrap());
             vm.data_stack.push(b.unwrap());
-        }
+        },
         StackOpTypes::Swap => {
             let a = vm.data_stack.pop();
             if a.is_none() {
@@ -48,6 +48,11 @@ pub(super) fn cycle_op(vm: &mut super::Vm, inst: u8) {
             }
             vm.data_stack.push(a.unwrap());
             vm.data_stack.push(b.unwrap());
+        },
+        StackOpTypes::MovToRts => {
+            if let Some(a) = vm.data_stack.pop() {
+                vm.call_stack.push(a);
+            }
         }
         _ => {}
     }
