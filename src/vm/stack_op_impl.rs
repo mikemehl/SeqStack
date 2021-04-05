@@ -459,4 +459,30 @@ mod test {
         assert!(!top.is_none(), "Top empty after rot!");
         assert_eq!(top.unwrap(), b_fp, "Unexpected value in stack!");
     }
+
+    #[test]
+    fn test_mov_to_rts() {
+
+        let mut vm = init_vm();
+        let a = 666.0;
+        let a_fp = fp::float_to_fix(a);
+        vm.data_stack.push(a_fp);
+        let code = [OpCodes::MovToRts as u8; 1];
+        assert!(vm.load(&code));
+        vm.cycle_once();
+        assert_eq!(vm.pc, 1, "Failed to increment program counter.");
+        assert!(vm.data_stack.empty(), "Data left on data stack.");
+        let cs_top = vm.call_stack.peek();
+        assert!(!cs_top.is_none(), "No data on call stack.");
+        assert_eq!(cs_top.unwrap(), a_fp, "Wrong data on call stack!");
+        // Should do nothing if no data on data stack.
+        let mut vm = init_vm();
+        let code = [OpCodes::MovToRts as u8; 1];
+        assert!(vm.load(&code));
+        vm.cycle_once();
+        assert_eq!(vm.pc, 1, "Failed to increment program counter.");
+        assert!(vm.data_stack.empty(), "Data left on data stack.");
+        let cs_top = vm.call_stack.peek();
+        assert!(cs_top.is_none(), "Data on call stack.");
+    }
 }
