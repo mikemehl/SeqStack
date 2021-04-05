@@ -52,6 +52,7 @@ pub enum StackOpTypes {
     Rot = 0b00010000,
     Swap = 0b00001100,
     MovToRts = 0b00001000,
+    MovFromRts = 0b00000100,
     Invalid = 0b11111111,
 }
 
@@ -66,6 +67,7 @@ impl From<u8> for StackOpTypes {
             0b00010000 => StackOpTypes::Rot,
             0b00001100 => StackOpTypes::Swap,
             0b00001000 => StackOpTypes::MovToRts,
+            0b00000100 => StackOpTypes::MovFromRts,
             _ => StackOpTypes::Invalid,
         }
     }
@@ -86,4 +88,5 @@ pub enum OpCodes {
     Rot = 0b11110000,
     Swap = 0b11101100,
     MovToRts = 0b11101000,
+    MovFromRts = 0b11100100,
 }

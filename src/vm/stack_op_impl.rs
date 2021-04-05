@@ -10,12 +10,12 @@ pub(super) fn cycle_op(vm: &mut super::Vm, inst: u8) {
         StackOpTypes::Store => op_store(vm, addr_mode),
         StackOpTypes::Pop => {
             let _ = vm.data_stack.pop();
-        },
+        }
         StackOpTypes::Dup => {
             if let Some(val) = vm.data_stack.peek() {
                 vm.data_stack.push(val);
             }
-        },
+        }
         StackOpTypes::Rot => {
             let a = vm.data_stack.pop();
             if a.is_none() {
@@ -35,7 +35,7 @@ pub(super) fn cycle_op(vm: &mut super::Vm, inst: u8) {
             vm.data_stack.push(a.unwrap());
             vm.data_stack.push(c.unwrap());
             vm.data_stack.push(b.unwrap());
-        },
+        }
         StackOpTypes::Swap => {
             let a = vm.data_stack.pop();
             if a.is_none() {
@@ -48,10 +48,15 @@ pub(super) fn cycle_op(vm: &mut super::Vm, inst: u8) {
             }
             vm.data_stack.push(a.unwrap());
             vm.data_stack.push(b.unwrap());
-        },
+        }
         StackOpTypes::MovToRts => {
             if let Some(a) = vm.data_stack.pop() {
                 vm.call_stack.push(a);
+            }
+        }
+        StackOpTypes::MovFromRts => {
+            if let Some(a) = vm.call_stack.pop() {
+                vm.data_stack.push(a);
             }
         }
         _ => {}
@@ -467,7 +472,6 @@ mod test {
 
     #[test]
     fn test_mov_to_rts() {
-
         let mut vm = init_vm();
         let a = 666.0;
         let a_fp = fp::float_to_fix(a);
@@ -489,5 +493,30 @@ mod test {
         assert!(vm.data_stack.empty(), "Data left on data stack.");
         let cs_top = vm.call_stack.peek();
         assert!(cs_top.is_none(), "Data on call stack.");
+    }
+
+    #[test]
+    fn test_mov_from_rts() {
+        let mut vm = init_vm();
+        let a = 666.0;
+        let a_fp = fp::float_to_fix(a);
+        vm.call_stack.push(a_fp);
+        let code = [OpCodes::MovFromRts as u8; 1];
+        assert!(vm.load(&code));
+        vm.cycle_once();
+        assert_eq!(vm.pc, 1, "Failed to increment program counter.");
+        assert!(vm.call_stack.empty(), "Data left on call stack.");
+        let ds_top = vm.data_stack.peek();
+        assert!(!ds_top.is_none(), "No data on data stack.");
+        assert_eq!(ds_top.unwrap(), a_fp, "Wrong data on data stack!");
+        // Should do nothing if no data on data stack.
+        let mut vm = init_vm();
+        let code = [OpCodes::MovFromRts as u8; 1];
+        assert!(vm.load(&code));
+        vm.cycle_once();
+        assert_eq!(vm.pc, 1, "Failed to increment program counter.");
+        assert!(vm.call_stack.empty(), "Data left on call stack.");
+        let ds_top = vm.data_stack.peek();
+        assert!(ds_top.is_none(), "Data on data stack.");
     }
 }
