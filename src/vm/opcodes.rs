@@ -73,6 +73,28 @@ impl From<u8> for StackOpTypes {
     }
 }
 
+// Arithmetic family specific enums
+pub enum ArithmeticOpTypes {
+    Add = 0b00011000,
+    Sub = 0b00010000,
+    Mul = 0b00001000,
+    Div = 0b00000000,
+    Invalid = 0b11111111,
+}
+
+impl From<u8> for ArithmeticOpTypes {
+    fn from(a: u8) -> Self {
+        let a_masked = a & OpMasks::Type as u8;
+        match a_masked {
+            0b00011000 => ArithmeticOpTypes::Add,
+            0b00010000 => ArithmeticOpTypes::Sub,
+            0b00001000 => ArithmeticOpTypes::Mul,
+            0b00000000 => ArithmeticOpTypes::Div,
+            _ => ArithmeticOpTypes::Invalid,
+        }
+    }
+}
+
 // All Opcodes
 pub enum OpCodes {
     PushImm = 0b11111111,
@@ -89,4 +111,5 @@ pub enum OpCodes {
     Swap = 0b11101100,
     MovToRts = 0b11101000,
     MovFromRts = 0b11100100,
+    Add = 0b110_11_000,
 }
