@@ -23,6 +23,15 @@ pub(super) fn cycle_op(vm: &mut super::Vm, inst: u8) {
                 }
             }
         }
+        ArithmeticOpTypes::Mul => {
+            if let Some(a) = vm.data_stack.pop() {
+                if let Some(b) = vm.data_stack.pop() {
+                    vm.data_stack.push(fp::fp_mul(a, b));
+                } else {
+                    vm.data_stack.push(a);
+                }
+            }
+        }
         _ => {}
     }
 }
