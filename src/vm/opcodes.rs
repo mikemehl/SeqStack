@@ -125,4 +125,5 @@ pub enum OpCodes {
     MovFromRts = 0b111_001_00,
     Add = 0b110_11_000,
     Sub = 0b110_10_000,
+    Mul = 0b110_01_000,
 }
