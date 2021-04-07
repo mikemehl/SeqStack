@@ -14,6 +14,15 @@ pub(super) fn cycle_op(vm: &mut super::Vm, inst: u8) {
                 }
             }
         }
+        ArithmeticOpTypes::Sub => {
+            if let Some(a) = vm.data_stack.pop() {
+                if let Some(b) = vm.data_stack.pop() {
+                    vm.data_stack.push(b - a);
+                } else {
+                    vm.data_stack.push(a);
+                }
+            }
+        }
         _ => {}
     }
 }
@@ -73,7 +82,7 @@ mod test {
     fn test_sub_op() {
         fn run_test(a: f32, b: f32) -> () {
             let mut vm = init_vm();
-            let c = a + b;
+            let c = a - b;
             let a_fp = fp::float_to_fix(a);
             let b_fp = fp::float_to_fix(b);
             let c_fp = fp::float_to_fix(c);
@@ -85,11 +94,11 @@ mod test {
             vm.cycle_once();
             assert_eq!(vm.pc, 1, "Failed to increment program counter.");
             let r = vm.data_stack.pop();
-            assert!(!r.is_none(), "Data stack empty after add.");
-            assert_eq!(r.unwrap(), c_fp, "Wrong value after add.");
+            assert!(!r.is_none(), "Data stack empty after sub.");
+            assert_eq!(r.unwrap(), c_fp, "Wrong value after sub.");
             assert!(
                 vm.data_stack.pop().is_none(),
-                "Extraneous data left on stack after add."
+                "Extraneous data left on stack after sub."
             );
         }
         run_test(5.0, 12.0);
