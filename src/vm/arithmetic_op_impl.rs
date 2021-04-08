@@ -137,11 +137,12 @@ mod test {
             assert!(
                 vm.data_stack.pop().is_none(),
                 "Extraneous data left on stack after mul."
-            );
+            ); 
         }
         run_test(5.0, 12.0);
         run_test(-25.0, 24.0);
         run_test(i16::MAX as f32, 0.0);
-        run_test(-1234.0, 1234.0);
+        run_test(-1.0, 666.0);
+        run_test(-500.0, 50.0);
     }
 }
