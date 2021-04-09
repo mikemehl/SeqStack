@@ -32,6 +32,15 @@ pub(super) fn cycle_op(vm: &mut super::Vm, inst: u8) {
                 }
             }
         }
+        ArithmeticOpTypes::Div => {
+            if let Some(a) = vm.data_stack.pop() {
+                if let Some(b) = vm.data_stack.pop() {
+                    vm.data_stack.push(fp::fp_div(a, b));
+                } else {
+                    vm.data_stack.push(a);
+                }
+            }
+        }
         _ => {}
     }
 }
@@ -137,9 +146,39 @@ mod test {
             assert!(
                 vm.data_stack.pop().is_none(),
                 "Extraneous data left on stack after mul."
-            ); 
+            );
         }
         run_test(5.0, 12.0);
+        run_test(-25.0, 24.0);
+        run_test(i16::MAX as f32, 0.0);
+        run_test(-1.0, 666.0);
+        run_test(-500.0, 50.0);
+    }
+
+    #[test]
+    fn test_div_op() {
+        fn run_test(a: f32, b: f32) -> () {
+            let mut vm = init_vm();
+            let c = a / b;
+            let a_fp = fp::float_to_fix(a);
+            let b_fp = fp::float_to_fix(b);
+            let c_fp = fp::float_to_fix(c);
+            vm.data_stack.push(a_fp);
+            vm.data_stack.push(b_fp);
+            let mut code = [0u8; RAM_SIZE];
+            code[0] = OpCodes::Div as u8;
+            vm.load(&code);
+            vm.cycle_once();
+            assert_eq!(vm.pc, 1, "Failed to increment program counter.");
+            let r = vm.data_stack.pop();
+            assert!(!r.is_none(), "Data stack empty after div.");
+            assert_eq!(r.unwrap(), c_fp, "Wrong value after div.");
+            assert!(
+                vm.data_stack.pop().is_none(),
+                "Extraneous data left on stack after div."
+            );
+        }
+        run_test(12.0, 5.0);
         run_test(-25.0, 24.0);
         run_test(i16::MAX as f32, 0.0);
         run_test(-1.0, 666.0);
