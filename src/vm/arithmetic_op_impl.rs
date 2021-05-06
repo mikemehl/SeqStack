@@ -159,7 +159,7 @@ mod test {
     fn test_div_op() {
         fn run_test(a: f32, b: f32) -> () {
             let mut vm = init_vm();
-            let c = a / b;
+            let c = b / a;
             let a_fp = fp::float_to_fix(a);
             let b_fp = fp::float_to_fix(b);
             let c_fp = fp::float_to_fix(c);
@@ -172,6 +172,7 @@ mod test {
             assert_eq!(vm.pc, 1, "Failed to increment program counter.");
             let r = vm.data_stack.pop();
             assert!(!r.is_none(), "Data stack empty after div.");
+            let _r_val = fp::fix_to_float(r.unwrap());
             assert_eq!(r.unwrap(), c_fp, "Wrong value after div.");
             assert!(
                 vm.data_stack.pop().is_none(),
