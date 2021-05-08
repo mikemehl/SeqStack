@@ -113,6 +113,7 @@ impl From<u8> for ArithmeticOpTypes {
 pub enum BitOpTypes {
     Shl = 0b000_111_00,
     Shr = 0b000_110_00,
+    Rotl = 0b000_101_00,
     Invalid = 0b11111111,
 }
 
@@ -123,6 +124,7 @@ impl From<u8> for BitOpTypes {
         match a_masked {
             0b000_111_00 => BitOpTypes::Shl,
             0b000_110_00 => BitOpTypes::Shr,
+            0b000_101_00 => BitOpTypes::Rotl,
             _ => BitOpTypes::Invalid,
         }
     }
@@ -149,6 +151,7 @@ pub enum OpCodes {
     Sub = 0b110_10_000,
     Mul = 0b110_01_000,
     Div = 0b110_00_000,
-    Shl = 0b101_111_00,
-    Shr = 0b101_110_00,
+    Shl  = 0b101_111_00,
+    Shr  = 0b101_110_00,
+    Rotl = 0b101_101_00,
 }
