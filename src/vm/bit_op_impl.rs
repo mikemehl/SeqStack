@@ -88,6 +88,27 @@ mod test {
             expected,
             result.unwrap()
         );
+
+        let mut vm = init_vm();
+        let a = 0xFFFFFFFFu32 as i32;
+        let shift_amt = fp::float_to_fix(2.0);
+        let expected = a << 2;
+        vm.data_stack.push(a);
+        vm.data_stack.push(shift_amt);
+        let mut code = [0u8; RAM_SIZE];
+        code[0] = OpCodes::Shl as u8;
+        vm.load(&code);
+        vm.cycle_once();
+        assert_eq!(vm.pc, 1, "Shiftl failed to increment program counter!");
+        let result = vm.data_stack.pop();
+        assert!(!result.is_none(), "NONE on stack pop!");
+        assert_eq!(
+            result.unwrap(),
+            expected,
+            "Shiftl expected {:x} but found {:x}!",
+            expected,
+            result.unwrap()
+        );
     }
 
     #[test]
@@ -112,6 +133,27 @@ mod test {
             expected,
             result.unwrap()
         );
+
+        let mut vm = init_vm();
+        let a = 0xFFFFFFFFu32 as i32;
+        let shift_amt = fp::float_to_fix(2.0);
+        let expected = a >> 2;
+        vm.data_stack.push(a);
+        vm.data_stack.push(shift_amt);
+        let mut code = [0u8; RAM_SIZE];
+        code[0] = OpCodes::Shr as u8;
+        vm.load(&code);
+        vm.cycle_once();
+        assert_eq!(vm.pc, 1, "Shiftr failed to increment program counter!");
+        let result = vm.data_stack.pop();
+        assert!(!result.is_none(), "NONE on stack pop!");
+        assert_eq!(
+            result.unwrap(),
+            expected,
+            "Shiftr expected {:x} but found {:x}!",
+            expected,
+            result.unwrap()
+        );
     }
 
     #[test]
@@ -120,6 +162,27 @@ mod test {
         let a = 0x8FFFFFFFu32 as i32;
         let expected = 0x1FFFFFFFu32 as i32;
         let rot_amt = fp::float_to_fix(1.0);
+        vm.data_stack.push(a);
+        vm.data_stack.push(rot_amt);
+        let mut code = [0u8; RAM_SIZE];
+        code[0] = OpCodes::Rotl as u8;
+        vm.load(&code);
+        vm.cycle_once();
+        assert_eq!(vm.pc, 1, "Rotl failed to increment program counter!");
+        let result = vm.data_stack.pop();
+        assert!(!result.is_none(), "NONE on stack pop!");
+        assert_eq!(
+            result.unwrap(),
+            expected,
+            "Rotl expected {:x} but found {:x}!",
+            expected,
+            result.unwrap() 
+        );
+
+        let mut vm = init_vm();
+        let a = 0x8FFFFFFFu32 as i32;
+        let expected = 0x3FFFFFFEu32 as i32;
+        let rot_amt = fp::float_to_fix(2.0);
         vm.data_stack.push(a);
         vm.data_stack.push(rot_amt);
         let mut code = [0u8; RAM_SIZE];
