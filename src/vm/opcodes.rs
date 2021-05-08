@@ -115,6 +115,10 @@ pub enum BitOpTypes {
     Shr = 0b000_110_00,
     Rotl = 0b000_101_00,
     Rotr = 0b000_100_00,
+    And = 0b000_011_00,
+    Or = 0b101_010_00,
+    Xor = 0b000_001_00,
+    Not = 0b000_000_00,
     Invalid = 0b11111111,
 }
 
@@ -127,6 +131,10 @@ impl From<u8> for BitOpTypes {
             0b000_110_00 => BitOpTypes::Shr,
             0b000_101_00 => BitOpTypes::Rotl,
             0b000_100_00 => BitOpTypes::Rotr,
+            0b000_011_00 => BitOpTypes::And,
+            0b000_010_00 => BitOpTypes::Or,
+            0b000_001_00 => BitOpTypes::Xor,
+            0b000_000_00 => BitOpTypes::Not,
             _ => BitOpTypes::Invalid,
         }
     }
@@ -157,4 +165,8 @@ pub enum OpCodes {
     Shr = 0b101_110_00,
     Rotl = 0b101_101_00,
     Rotr = 0b101_100_00,
+    And = 0b101_011_00,
+    Or = 0b101_010_00,
+    Xor = 0b101_001_00,
+    Not = 0b101_000_00,
 }

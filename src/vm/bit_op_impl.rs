@@ -51,6 +51,34 @@ pub(super) fn cycle_op(vm: &mut super::Vm, inst: u8) {
                 }
             }
         }
+        BitOpTypes::And => {
+            if let Some(a) = vm.data_stack.pop() {
+                if let Some(b) = vm.data_stack.pop() {
+                    vm.data_stack.push(a & b);
+                }
+            }
+        }
+        BitOpTypes::Or => {
+            if let Some(a) = vm.data_stack.pop() {
+                if let Some(b) = vm.data_stack.pop() {
+                    let val = a | b;
+                    vm.data_stack.push(val);
+                }
+            }
+        }
+        BitOpTypes::Xor => {
+            if let Some(a) = vm.data_stack.pop() {
+                if let Some(b) = vm.data_stack.pop() {
+                    let val = a ^ b;
+                    vm.data_stack.push(val);
+                }
+            }
+        }
+        BitOpTypes::Not => {
+            if let Some(a) = vm.data_stack.pop() {
+                vm.data_stack.push(!a);
+            }
+        }
         _ => {}
     }
 }
@@ -253,6 +281,100 @@ mod test {
             result.unwrap(),
             expected,
             "Rotr expected {:x} but found {:x}!",
+            expected,
+            result.unwrap()
+        );
+    }
+
+    #[test]
+    fn test_and() {
+        let mut vm = init_vm();
+        let a = 0xFFFF0000u32 as i32;
+        let b = 0x000FFFFFu32 as i32;
+        let expected = a & b;
+        vm.data_stack.push(a);
+        vm.data_stack.push(b);
+        let mut code = [0u8; RAM_SIZE];
+        code[0] = OpCodes::And as u8;
+        vm.load(&code);
+        vm.cycle_once();
+        assert_eq!(vm.pc, 1, "And failed to increment program counter!");
+        let result = vm.data_stack.pop();
+        assert!(!result.is_none(), "NONE on stack pop!");
+        assert_eq!(
+            result.unwrap(),
+            expected,
+            "And expected {:x} but found {:x}!",
+            expected,
+            result.unwrap()
+        );
+    }
+
+    #[test]
+    fn test_or() {
+        let mut vm = init_vm();
+        let a = 0xF1FF0000u32 as i32;
+        let b = 0x000F1F1Fu32 as i32;
+        let expected = a | b;
+        vm.data_stack.push(a);
+        vm.data_stack.push(b);
+        let mut code = [0u8; RAM_SIZE];
+        code[0] = OpCodes::Or as u8;
+        vm.load(&code);
+        vm.cycle_once();
+        assert_eq!(vm.pc, 1, "Or failed to increment program counter!");
+        let result = vm.data_stack.pop();
+        assert!(!result.is_none(), "NONE on stack pop!");
+        assert_eq!(
+            result.unwrap(),
+            expected,
+            "Or expected {:x} but found {:x}!",
+            expected,
+            result.unwrap()
+        );
+    }
+
+    #[test]
+    fn test_xor() {
+        let mut vm = init_vm();
+        let a = 0xF1FF0000u32 as i32;
+        let b = 0x000F1F1Fu32 as i32;
+        let expected = a ^ b;
+        vm.data_stack.push(a);
+        vm.data_stack.push(b);
+        let mut code = [0u8; RAM_SIZE];
+        code[0] = OpCodes::Xor as u8;
+        vm.load(&code);
+        vm.cycle_once();
+        assert_eq!(vm.pc, 1, "Xor failed to increment program counter!");
+        let result = vm.data_stack.pop();
+        assert!(!result.is_none(), "NONE on stack pop!");
+        assert_eq!(
+            result.unwrap(),
+            expected,
+            "Xor expected {:x} but found {:x}!",
+            expected,
+            result.unwrap()
+        );
+    }
+
+    #[test]
+    fn test_not() {
+        let mut vm = init_vm();
+        let a = 0xF1FF0000u32 as i32;
+        let expected = !a;
+        vm.data_stack.push(a);
+        let mut code = [0u8; RAM_SIZE];
+        code[0] = OpCodes::Not as u8;
+        vm.load(&code);
+        vm.cycle_once();
+        assert_eq!(vm.pc, 1, "Not failed to increment program counter!");
+        let result = vm.data_stack.pop();
+        assert!(!result.is_none(), "NONE on stack pop!");
+        assert_eq!(
+            result.unwrap(),
+            expected,
+            "Not expected {:x} but found {:x}!",
             expected,
             result.unwrap()
         );
