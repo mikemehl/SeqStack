@@ -1,8 +1,8 @@
+mod arithmetic_op_impl;
+mod bit_op_impl;
 /// Module with the central vm structures.
 mod opcodes;
-mod arithmetic_op_impl;
 mod stack_op_impl;
-mod bit_op_impl;
 
 use crate::fp;
 use crate::stk::Stack;

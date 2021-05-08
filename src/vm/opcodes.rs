@@ -112,6 +112,7 @@ impl From<u8> for ArithmeticOpTypes {
 #[allow(clippy::unusual_byte_groupings)]
 pub enum BitOpTypes {
     Shl = 0b000_111_00,
+    Shr = 0b000_110_00,
     Invalid = 0b11111111,
 }
 
@@ -121,6 +122,7 @@ impl From<u8> for BitOpTypes {
         let a_masked = a & OpMasks::Type as u8;
         match a_masked {
             0b000_111_00 => BitOpTypes::Shl,
+            0b000_110_00 => BitOpTypes::Shr,
             _ => BitOpTypes::Invalid,
         }
     }
@@ -148,4 +150,5 @@ pub enum OpCodes {
     Mul = 0b110_01_000,
     Div = 0b110_00_000,
     Shl = 0b101_111_00,
+    Shr = 0b101_110_00,
 }
