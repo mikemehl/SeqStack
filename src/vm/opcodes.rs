@@ -12,6 +12,7 @@ pub enum OpMasks {
 pub enum OpFamily {
     StackOp,
     ArithmeticOp,
+    BitManipOp,
     Invalid,
 }
 
@@ -22,6 +23,7 @@ impl From<u8> for OpFamily {
         match a_masked {
             0b111_000_00 => OpFamily::StackOp,
             0b110_000_00 => OpFamily::ArithmeticOp,
+            0b101_000_00 => OpFamily::BitManipOp,
             _ => OpFamily::Invalid,
         }
     }
@@ -106,6 +108,24 @@ impl From<u8> for ArithmeticOpTypes {
     }
 }
 
+// Bit manipulation family specific enums
+#[allow(clippy::unusual_byte_groupings)]
+pub enum BitOpTypes {
+    Shl = 0b000_111_00,
+    Invalid = 0b11111111,
+}
+
+#[allow(clippy::unusual_byte_groupings)]
+impl From<u8> for BitOpTypes {
+    fn from(a: u8) -> Self {
+        let a_masked = a & OpMasks::Type as u8;
+        match a_masked {
+            0b000_111_00 => BitOpTypes::Shl,
+            _ => BitOpTypes::Invalid,
+        }
+    }
+}
+
 // All Opcodes
 #[allow(clippy::unusual_byte_groupings)]
 pub enum OpCodes {
@@ -127,4 +147,5 @@ pub enum OpCodes {
     Sub = 0b110_10_000,
     Mul = 0b110_01_000,
     Div = 0b110_00_000,
+    Shl = 0b101_111_00,
 }
