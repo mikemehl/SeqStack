@@ -4,8 +4,14 @@ use crate::stk::Stack;
 use crate::vm::fp;
 
 pub(super) fn cycle_op(vm: &mut super::Vm, inst: u8) {
-    let op_type = BitOpTypes::from(inst);
+    let op_type = PortOpTypes::from(inst);
     match op_type {
+        PortOpTypes::Push => {
+            if let Some(val) = vm.data_stack.pop() {
+                let port_val = (inst & 0b00000111) as usize;
+                vm.ports[port_val].push(val);
+            }
+        }
         _ => ()
     }
 }
