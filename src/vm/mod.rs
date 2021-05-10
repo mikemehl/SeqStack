@@ -65,6 +65,7 @@ impl Vm {
             OpFamily::StackOp => stack_op_impl::cycle_op(self, next_inst),
             OpFamily::ArithmeticOp => arithmetic_op_impl::cycle_op(self, next_inst),
             OpFamily::BitManipOp => bit_op_impl::cycle_op(self, next_inst),
+            OpFamily::PortOp => port_op_impl::cycle_op(self, next_inst),
             _ => {}
         }
     }

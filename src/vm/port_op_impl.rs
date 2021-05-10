@@ -40,7 +40,7 @@ mod test {
     }
 
     #[test]
-    fn test_push() {
+    fn test_port_push() {
         let mut vm = init_vm();
         let val = 0xDEADC0EDu32 as i32;
         vm.data_stack.push(val);
