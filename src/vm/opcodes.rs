@@ -13,6 +13,7 @@ pub enum OpFamily {
     StackOp,
     ArithmeticOp,
     BitManipOp,
+    PortOp,
     Invalid,
 }
 
@@ -24,6 +25,7 @@ impl From<u8> for OpFamily {
             0b111_000_00 => OpFamily::StackOp,
             0b110_000_00 => OpFamily::ArithmeticOp,
             0b101_000_00 => OpFamily::BitManipOp,
+            0b100_000_00 => OpFamily::PortOp,
             _ => OpFamily::Invalid,
         }
     }
@@ -136,6 +138,24 @@ impl From<u8> for BitOpTypes {
             0b000_001_00 => BitOpTypes::Xor,
             0b000_000_00 => BitOpTypes::Not,
             _ => BitOpTypes::Invalid,
+        }
+    }
+}
+
+// Port manipulation family specific enums
+#[allow(clippy::unusual_byte_groupings)]
+pub enum PortOpTypes {
+    Push = 0b000_11_000,
+    Invalid = 0b11111111,
+}
+
+#[allow(clippy::unusual_byte_groupings)]
+impl From<u8> for PortOpTypes {
+    fn from(a: u8) -> Self {
+        let a_masked = a & OpMasks::Type as u8;
+        match a_masked {
+         0b000_11_000 => PortOpTypes::Push,
+            _ => PortOpTypes::Invalid,
         }
     }
 }
